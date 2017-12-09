@@ -55,8 +55,8 @@ This more complex example demonstrates how to deploy to several environments bas
         deploy-qa:
           image: quay.io/honestbee/drone-kubernetes
           kubernetes_user: ${KUBERNETES_USER}
-          kubernetes_server: ${KUBERNETES_SERVER_STAGING}
-          kubernetes_cert: ${KUBERNETES_CERT_STAGING}
+          kubernetes_server: ${KUBERNETES_SERVER_QA}
+          kubernetes_cert: ${KUBERNETES_CERT_QA}
           kubernetes_client_cert: ${PLUGIN_KUBERNETES_CLIENT_CERT}
           kubernetes_client_key: ${PLUGIN_KUBERNETES_CLIENT_KEY}
           deployment: my-deployment
