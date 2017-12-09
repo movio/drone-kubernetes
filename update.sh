@@ -29,14 +29,17 @@ if [ ! -z ${PLUGIN_KUBERNETES_USER} ]; then
 fi
 
 if [ ! -z ${KUBERNETES_CLIENT_CERT} ] && [ ! -z ${KUBERNETES_CLIENT_KEY} ]; then
+  echo "INFO: Setting client credentials with signed-certificate and key."
   echo ${KUBERNETES_CLIENT_CERT} | base64 -d > client.crt
   echo ${KUBERNETES_CLIENT_KEY} | base64 -d > client.key
   kubectl config set-credentials ${KUBERNETES_USER} --client-certificate=client.crt --client-key=client.key
 else
+  echo "INFO: Setting client credentials with token."
   kubectl config set-credentials ${KUBERNETES_USER} --token=${KUBERNETES_TOKEN}
 fi
 
 if [ ! -z ${KUBERNETES_CERT} ]; then
+  echo "INFO: Using secure connection with tls-certificate."
   echo ${KUBERNETES_CERT} | base64 -d > ca.crt
   kubectl config set-cluster default --server=${KUBERNETES_SERVER} --certificate-authority=ca.crt
 else
