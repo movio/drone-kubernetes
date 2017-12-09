@@ -2,7 +2,7 @@
 
 This plugin allows to update a Kubernetes deployment.
 
-## Usage  
+## Usage
 
 This pipeline will update the `my-deployment` deployment with the image tagged `DRONE_COMMIT_SHA:0:8`
 
@@ -13,13 +13,13 @@ This pipeline will update the `my-deployment` deployment with the image tagged `
             deployment: my-deployment
             repo: myorg/myrepo
             container: my-container
-            tag: 
+            tag:
                 - mytag
                 - latest
 ```
 
 Deploying containers across several deployments, eg in a scheduler-worker setup. Make sure your container `name` in your manifest is the same for each pod.
-    
+
 ```yaml
     pipeline:
         deploy:
@@ -27,7 +27,7 @@ Deploying containers across several deployments, eg in a scheduler-worker setup.
             deployment: [server-deploy, worker-deploy]
             repo: myorg/myrepo
             container: my-container
-            tag:                 
+            tag:
                 - mytag
                 - latest
 ```
@@ -41,19 +41,37 @@ Deploying multiple containers within the same deployment.
             deployment: my-deployment
             repo: myorg/myrepo
             container: [container1, container2]
-            tag:                 
+            tag:
                 - mytag
                 - latest
 ```
 
 **NOTE**: Combining multi container deployments across multiple deployments is not recommended
 
-This more complex example demonstrates how to deploy to several environments based on the branch, in a `app` namespace 
+This more complex example demonstrates how to deploy to several environments based on the branch, in a `app` namespace
 
 ```yaml
     pipeline:
+        deploy-qa:
+          image: quay.io/honestbee/drone-kubernetes
+          kubernetes_user: ${KUBERNETES_USER}
+          kubernetes_server: ${KUBERNETES_SERVER_STAGING}
+          kubernetes_cert: ${KUBERNETES_CERT_STAGING}
+          kubernetes_client_cert: ${PLUGIN_KUBERNETES_CLIENT_CERT}
+          kubernetes_client_key: ${PLUGIN_KUBERNETES_CLIENT_KEY}
+          deployment: my-deployment
+          repo: myorg/myrepo
+          container: my-container
+          namespace: app
+          tag:
+              - mytag
+              - latest
+          when:
+              branch: [ qa ]
+
         deploy-staging:
             image: quay.io/honestbee/drone-kubernetes
+            kubernetes_user: ${KUBERNETES_USER}
             kubernetes_server: ${KUBERNETES_SERVER_STAGING}
             kubernetes_cert: ${KUBERNETES_CERT_STAGING}
             kubernetes_token: ${KUBERNETES_TOKEN_STAGING}
@@ -61,7 +79,7 @@ This more complex example demonstrates how to deploy to several environments bas
             repo: myorg/myrepo
             container: my-container
             namespace: app
-            tag:                 
+            tag:
                 - mytag
                 - latest
             when:
@@ -76,7 +94,7 @@ This more complex example demonstrates how to deploy to several environments bas
             repo: myorg/myrepo
             container: my-container
             namespace: app
-            tag:                 
+            tag:
                 - mytag
                 - latest
             when:
@@ -96,7 +114,7 @@ This more complex example demonstrates how to deploy to several environments bas
         your-user/your-repo KUBERNETES_TOKEN eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJ...
 ```
 
-When using TLS Verification, ensure Server Certificate used by kubernetes API server 
+When using TLS Verification, ensure Server Certificate used by kubernetes API server
 is signed for SERVER url ( could be a reason for failures if using aliases of kubernetes cluster )
 
 ## How to get token
@@ -171,7 +189,7 @@ kubectl -n web get secrets
 kubectl -n web get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:'
 ```
 
-## To do 
+## To do
 
 Replace the current kubectl bash script with a go implementation.
 
