@@ -34,8 +34,8 @@ fi
 
 if [[ ! -z "${KUBERNETES_CLIENT_CERT}" ]] && [[ ! -z "${KUBERNETES_CLIENT_KEY}" ]]; then
   echo "INFO: Setting client credentials with signed-certificate and key."
-  echo ${KUBERNETES_CLIENT_CERT} > client.crt
-  echo ${KUBERNETES_CLIENT_KEY} > client.key
+  echo ${KUBERNETES_CLIENT_CERT} | base64 -d > client.crt
+  echo ${KUBERNETES_CLIENT_KEY} | base64 -d > client.key
   kubectl config set-credentials ${KUBERNETES_USER} --client-certificate=client.crt --client-key=client.key
 else
   echo "ERROR: Provide the following authentication params:"
@@ -47,7 +47,7 @@ fi
 
 if [ ! -z "${KUBERNETES_CERT}" ]; then
   echo "INFO: Using secure connection with tls-certificate."
-  echo ${KUBERNETES_CERT} > ca.crt
+  echo ${KUBERNETES_CERT} | base64 -d > ca.crt
   kubectl config set-cluster default --server=${KUBERNETES_SERVER} --certificate-authority=ca.crt
 else
   echo "WARNING: Using insecure connection to cluster"
@@ -61,7 +61,7 @@ kubectl config use-context default
 IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
 IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
 for DEPLOY in ${DEPLOYMENTS[@]}; do
-  echo Deploying to $KUBERNETES_SERVER
+  echo Deploying to ${KUBERNETES_ENV}
   for CONTAINER in ${CONTAINERS[@]}; do
     kubectl -n ${PLUGIN_NAMESPACE} set image deployment/${DEPLOY} \
       ${CONTAINER}=${PLUGIN_REPO}:${PLUGIN_TAG} --record
