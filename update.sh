@@ -64,6 +64,6 @@ for DEPLOY in ${DEPLOYMENTS[@]}; do
   echo Deploying to ${KUBERNETES_ENV}
   for CONTAINER in ${CONTAINERS[@]}; do
     kubectl -n ${PLUGIN_NAMESPACE} set image deployment/${DEPLOY} \
-      ${CONTAINER}=${PLUGIN_REPO}:${PLUGIN_TAG} --record
+      ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
 done
