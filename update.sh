@@ -12,13 +12,16 @@ fi
 
 # check required params
 if [ ! -z ${PLUGIN_CLUSTER} ]; then
-  CLUSTER=${PLUGIN_CLUSTER}
+  # convert cluster name to ucase and assign
+  CLUSTER=${PLUGIN_CLUSTER^^}
 
+  # create dynamic cert var names
   SERVER_URL_VAR=SERVER_URL_${CLUSTER}
   SERVER_CERT_VAR=SERVER_CERT_${CLUSTER}
   CLIENT_CERT_VAR=CLIENT_CERT_${CLUSTER}
   CLIENT_KEY_VAR=CLIENT_KEY_${CLUSTER}
 
+  # expand the var contents
   SERVER_URL=${!SERVER_URL_VAR}
   SERVER_CERT=${!SERVER_CERT_VAR}
   CLIENT_CERT=${!CLIENT_CERT_VAR}
