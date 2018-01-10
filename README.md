@@ -1,139 +1,75 @@
-# Kubernetes plugin for drone.io [![Docker Repository on Quay](https://quay.io/repository/honestbee/drone-kubernetes/status "Docker Repository on Quay")](https://quay.io/repository/honestbee/drone-kubernetes)
+# Kubernetes plugin for drone.io [![Docker Repository on Docker Cloud](https://cloud.docker.com/app/razorpay/repository/docker/razorpay/drone-kubernetes)
+## Borrowed and distilled from [honestbee/drone-kubernetes](https://github.com/honestbee/drone-kubernetes)
 
 This plugin allows to update a Kubernetes deployment.
+  - Cert based auth for tls
+  - Insecure auth without tls
+
+This version deprecates token based auth
 
 ## Usage
 
 This pipeline will update the `my-deployment` deployment with the image tagged `DRONE_COMMIT_SHA:0:8`
 
 ```yaml
-    pipeline:
-        deploy:
-            image: quay.io/honestbee/drone-kubernetes
-            deployment: my-deployment
-            repo: myorg/myrepo
-            container: my-container
-            tag:
-                - mytag
-                - latest
+pipeline:
+  deploy:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_<cluster>
+      - server_cert_<cluster>
+      - client_cert_<cluster>
+      - client_key_<cluster>
+      - ...
+    user: <kubernetes-user with a cluster-rolebinding>
+    cluster: <kubernetes-cluster>
+    deployment: [<kubernetes-deployements, ...>]
+    repo: <org/repo>
+    container: [ <containers,...> ]
+    namespace: <kubernetes-namespace>
+    tag:
+      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+      - ...
+    when:
+      environment: <kubernetes-cluster>
+      branch: [ <branches>,... ]
+      event:
+        exclude: [push, pull_request, tag]
+        include: [deployment]
 ```
 
-Deploying containers across several deployments, eg in a scheduler-worker setup. Make sure your container `name` in your manifest is the same for each pod.
-
-```yaml
-    pipeline:
-        deploy:
-            image: quay.io/honestbee/drone-kubernetes
-            deployment: [server-deploy, worker-deploy]
-            repo: myorg/myrepo
-            container: my-container
-            tag:
-                - mytag
-                - latest
-```
-
-Deploying multiple containers within the same deployment.
-
-```yaml
-    pipeline:
-        deploy:
-            image: quay.io/honestbee/drone-kubernetes
-            deployment: my-deployment
-            repo: myorg/myrepo
-            container: [container1, container2]
-            tag:
-                - mytag
-                - latest
-```
-
-**NOTE**: Combining multi container deployments across multiple deployments is not recommended
-
-This more complex example demonstrates how to deploy to several environments based on the branch, in a `app` namespace
-
-```yaml
-    pipeline:
-        deploy-qa:
-          image: quay.io/honestbee/drone-kubernetes
-          kubernetes_user: ${KUBERNETES_USER}
-          kubernetes_server: ${KUBERNETES_SERVER_QA}
-          kubernetes_cert: ${KUBERNETES_CERT_QA}
-          kubernetes_client_cert: ${PLUGIN_KUBERNETES_CLIENT_CERT}
-          kubernetes_client_key: ${PLUGIN_KUBERNETES_CLIENT_KEY}
-          deployment: my-deployment
-          repo: myorg/myrepo
-          container: my-container
-          namespace: app
-          tag:
-              - mytag
-              - latest
-          when:
-              branch: [ qa ]
-
-        deploy-staging:
-            image: quay.io/honestbee/drone-kubernetes
-            kubernetes_user: ${KUBERNETES_USER}
-            kubernetes_server: ${KUBERNETES_SERVER_STAGING}
-            kubernetes_cert: ${KUBERNETES_CERT_STAGING}
-            kubernetes_token: ${KUBERNETES_TOKEN_STAGING}
-            deployment: my-deployment
-            repo: myorg/myrepo
-            container: my-container
-            namespace: app
-            tag:
-                - mytag
-                - latest
-            when:
-                branch: [ staging ]
-
-        deploy-prod:
-            image: quay.io/honestbee/drone-kubernetes
-            kubernetes_server: ${KUBERNETES_SERVER_PROD}
-            kubernetes_token: ${KUBERNETES_TOKEN_PROD}
-            # notice: no tls verification will be done, warning will is printed
-            deployment: my-deployment
-            repo: myorg/myrepo
-            container: my-container
-            namespace: app
-            tag:
-                - mytag
-                - latest
-            when:
-                branch: [ master ]
-```
 
 ## Required secrets
 
-```bash
-    drone secret add --image=honestbee/drone-kubernetes \
-        your-user/your-repo KUBERNETES_SERVER https://mykubernetesapiserver
-
-    drone secret add --image=honestbee/drone-kubernetes \
-        your-user/your-repo KUBERNETES_CERT <base64 encoded CA.crt>
-
-    drone secret add --image=honestbee/drone-kubernetes \
-        your-user/your-repo KUBERNETES_TOKEN eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJ...
-```
+  - server_url
+  - tls:
+    - server_cert
+      - `kubectl get secret [ your default secret name ] -o yaml | egrep 'ca.crt:' > ca.crt`
+      - `kubectl get secret [ your default secret name ] -o yaml | egrep 'ca.key:' > ca.key`
+    - client_cert
+    - client_key
+      - ```
+        openssl genrsa -out client.key
+        openssl req -new -key client.key -out client.csr -subj "/CN=drone/O=org"
+        openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 500
+        ```
+      - ```
+        cat ca.crt | base64 > car.crt.enc
+        cat client.crt | base64 > client.crt.enc
+        cat client.key | base64 > client.key.enc
+        ```
+      - ```
+        drone secret add -repository razorpay/gimli -image razorpay/drone-kubernetes -event deployment -name server_url_<cluster> -value https://k8s.org.com.:443
+        drone secret add -repository razorpay/gimli -image razorpay/drone-kubernetes -event deployment -name server_cert_<cluster> -value @./ca.crt.enc
+        drone secret add -repository razorpay/gimli -image razorpay/drone-kubernetes -event deployment -name client_cert_<cluster> -value @./client.crt.enc
+        drone secret add -repository razorpay/gimli -image razorpay/drone-kubernetes -event deployment -name client_key_<cluster> -value @./client.key.enc
+        ```
 
 When using TLS Verification, ensure Server Certificate used by kubernetes API server
 is signed for SERVER url ( could be a reason for failures if using aliases of kubernetes cluster )
-
-## How to get token
-1. After deployment inspect you pod for name of (k8s) secret with **token** and **ca.crt**
-```bash
-kubectl describe po/[ your pod name ] | grep SecretName | grep token
-```
-(When you use **default service account**)
-
-2. Get data from you (k8s) secret
-```bash
-kubectl get secret [ your default secret name ] -o yaml | egrep 'ca.crt:|token:'
-```
-3. Copy-paste contents of ca.crt into your drone's **KUBERNETES_CERT** secret
-4. Decode base64 encoded token
-```bash
-echo [ your k8s base64 encoded token ] | base64 -d && echo''
-```
-5. Copy-paste decoded token into your drone's **KUBERNETES_TOKEN** secret
 
 ### RBAC
 
