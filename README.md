@@ -1,4 +1,4 @@
-# Kubernetes plugin for drone.io [![Docker Repository on Docker Cloud](https://cloud.docker.com/app/razorpay/repository/docker/razorpay/drone-kubernetes)
+# Kubernetes plugin for drone.io [Docker Repository on Docker Cloud](https://cloud.docker.com/app/razorpay/repository/docker/razorpay/drone-kubernetes)
 ## Borrowed and distilled from [honestbee/drone-kubernetes](https://github.com/honestbee/drone-kubernetes)
 
 This plugin allows to update a Kubernetes deployment.
