@@ -71,4 +71,6 @@ for DEPLOY in ${DEPLOYMENTS[@]}; do
     kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
       ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
+  # wait on deployment rollout status
+  kubectl -n ${NAMESPACE} rollout status deployment/${DEPLOY}  
 done
