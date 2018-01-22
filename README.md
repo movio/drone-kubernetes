@@ -4,9 +4,8 @@
 
 This plugin allows to update a Kubernetes deployment.
   - Cert based auth for tls
+  - token based auth
   - Insecure auth without tls
-
-This version deprecates token based auth
 
 ## Usage
 
@@ -22,11 +21,12 @@ pipeline:
       - docker_password
       - server_url_<cluster>
       - server_cert_<cluster>
-      - client_cert_<cluster>
-      - client_key_<cluster>
+      - client_cert_<cluster> / - server_token_<cluster>
+      - client_key_<cluster> / - server_token_<cluster>
       - ...
     user: <kubernetes-user with a cluster-rolebinding>
     cluster: <kubernetes-cluster>
+    auth_mode: [ token | client-cert ] // provide only if providing server_cert_<cluster>
     deployment: [<kubernetes-deployements, ...>]
     repo: <org/repo>
     container: [ <containers,...> ]
@@ -46,6 +46,9 @@ pipeline:
 ## Required secrets
 
   - server_url
+  - token:
+    - server_token
+      - `kubectl get secret [ your default secret name ] -o yaml | egrep 'token:' > server.token`
   - tls:
     - server_cert
       - `kubectl get secret [ your default secret name ] -o yaml | egrep 'ca.crt:' > ca.crt`
