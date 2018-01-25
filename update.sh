@@ -104,7 +104,14 @@ pollDeploymentRollout(){
   local NAMESPACE=$1; shift
   local DEPLOY=$1
   # wait on deployment rollout status
-  kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}
+  while true; do
+    result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
+    if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
+      exit 0
+    else
+      sleep 10
+    fi
+  done
 }
 
 startDeployment(){
@@ -119,7 +126,7 @@ startDeployment(){
       kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
         ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
     done
-    #pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
+    pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
   done
 }
 
