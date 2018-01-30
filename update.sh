@@ -18,14 +18,6 @@ setNamespace(){
   NAMESPACE=${PLUGIN_NAMESPACE:-default}
 }
 
-setDeployments(){
-  IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
-}
-
-setContainers(){
-  IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
-}
-
 setCluster(){
   if [ ! -z ${PLUGIN_CLUSTER} ]; then
     # convert cluster name to ucase and assign
@@ -49,8 +41,6 @@ setServerUrl(){
 setGlobals(){
   setUser
   setNamespace
-  setDeployments
-  setContainers
   setCluster
   setServerUrl
 }
@@ -73,7 +63,7 @@ setInsecureCluster(){
   kubectl config set-cluster ${CLUSTER} --server=${SERVER_URL} --insecure-skip-tls-verify=true
 }
 
-setServerToken(){
+setClientToken(){
   local USER=$1; shift
   local SERVER_TOKEN=$1
 
@@ -103,30 +93,59 @@ setContext(){
 pollDeploymentRollout(){
   local NAMESPACE=$1; shift
   local DEPLOY=$1
+  local TIMEOUT=600
+
   # wait on deployment rollout status
+  echo "[INFO] Watching ${DEPLOY} rollout status..."
   while true; do
     result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
+    echo ${result}
     if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
-      exit 0
+      return 0
     else
+      # TODO: more conditions for error handling based on result text
       sleep 10
+      TIMEOUT=$((TIMEOUT-10))
+      if [ "${TIMEOUT}" -eq 0 ]; then
+        return 1
+      fi
     fi
   done
 }
 
 startDeployment(){
-  local CLUSTER=$1; shift
   local NAMESPACE=$1; shift
-  local DEPLOYMENTS=$1; shift
-  local CONTAINERS=$1
+  local DEPLOY=$1; shift
+  local CONTAINER=$1
+
+  kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
+    ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
+
+  pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
+  if [ "$?" -eq 0 ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+startDeployments(){
+  local CLUSTER=$1; shift
+  local NAMESPACE=$1
+
+  IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
+  IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
 
   for DEPLOY in ${DEPLOYMENTS[@]}; do
-    echo Deploying to ${CLUSTER}
+    echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
     for CONTAINER in ${CONTAINERS[@]}; do
-      kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
-        ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
+      startDeployment ${NAMESPACE} ${DEPLOY} ${CONTAINER}
+      if [ "$?" -eq 0 ]; then
+        continue
+      else
+        exit 0
+      fi
     done
-    pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
   done
 }
 
@@ -213,4 +232,4 @@ clusterAuth(){
 setGlobals
 clusterAuth ${SERVER_URL} ${CLUSTER} ${USER}
 setContext ${CLUSTER} ${USER}
-startDeployment ${CLUSTER} ${NAMESPACE} ${DEPLOYMENTS} ${CONTAINERS}
+startDeployments ${CLUSTER} ${NAMESPACE}
