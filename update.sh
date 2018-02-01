@@ -1,99 +1,235 @@
 #!/bin/bash
 set -euo pipefail
 
-# check optional params
-if [ ! -z ${PLUGIN_USER} ]; then
+# globals
+USER=""
+NAMESPACE=""
+CLUSTER=""
+DEPLOYMENTS=""
+CONTAINERS=""
+SERVER_URL=""
+
+# set globals
+setUser(){
   USER=${PLUGIN_USER:-default}
-fi
+}
 
-if [ ! -z ${PLUGIN_NAMESPACE} ]; then
+setNamespace(){
   NAMESPACE=${PLUGIN_NAMESPACE:-default}
-fi
+}
 
-# check required params
-if [ ! -z ${PLUGIN_CLUSTER} ]; then
-  # convert cluster name to ucase and assign
-  CLUSTER=${PLUGIN_CLUSTER^^}
-
-  # create dynamic cert var names
-  SERVER_URL_VAR=SERVER_URL_${CLUSTER}
-  SERVER_CERT_VAR=SERVER_CERT_${CLUSTER}
-
-  # expand the var contents
-  SERVER_URL=${!SERVER_URL_VAR}
-  SERVER_CERT=${!SERVER_CERT_VAR}
-
-  if [[ -z "${SERVER_URL}" ]]; then
-    echo "[ERROR] drone secret: ${SERVER_URL_VAR} not added!"
+setCluster(){
+  if [ ! -z ${PLUGIN_CLUSTER} ]; then
+    # convert cluster name to ucase and assign
+    CLUSTER=${PLUGIN_CLUSTER^^}
+  else
+    echo "[ERROR] Required pipeline parameter: cluster not provided"
     exit 1
   fi
+}
 
-  if [[ ! -z "${SERVER_CERT}" ]]; then
-    echo "[INFO] Using secure connection with tls-certificate."
-    echo ${SERVER_CERT} | base64 -d > ca.crt
-    kubectl config set-cluster ${CLUSTER} --server=${SERVER_URL} --certificate-authority=ca.crt
+setServerUrl(){
+  # create dynamic cert var names
+  local SERVER_URL_VAR=SERVER_URL_${CLUSTER}
+  SERVER_URL=${!SERVER_URL_VAR}
+  if [[ -z "${SERVER_URL}" ]]; then
+    echo "[ERROR] Required drone secret: ${SERVER_URL_VAR} not added!"
+    exit 1
+  fi
+}
 
-    # vars based on auth_mode
-    if [ ! -z ${PLUGIN_AUTH_MODE} ]; then
-      if [[ "${PLUGIN_AUTH_MODE}" == "token" ]]; then
-        echo "[INFO] Using Server token to authorize"
-        SERVER_TOKEN_VAR=SERVER_TOKEN_${CLUSTER}
-        # expand
-        SERVER_TOKEN=${!SERVER_TOKEN_VAR}
-        if [[ ! -z "${SERVER_TOKEN}" ]]; then
-          kubectl config set-credentials ${USER} --token=${SERVER_TOKEN}
-        else
-          echo "[ERROR] Required plugin param - server_token - not provided."
-          exit 1
-        fi
-      elif [[ "${PLUGIN_AUTH_MODE}" == "client-cert" ]]; then
-        echo "[INFO] Using Client cert and Key to authorize"
-        CLIENT_CERT_VAR=CLIENT_CERT_${CLUSTER}
-        CLIENT_KEY_VAR=CLIENT_KEY_${CLUSTER}
-        # expand
-        CLIENT_CERT=${!CLIENT_CERT_VAR}
-        CLIENT_KEY=${!CLIENT_KEY_VAR}
+setGlobals(){
+  setUser
+  setNamespace
+  setCluster
+  setServerUrl
+}
 
-        if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
-          echo "[INFO] Setting client credentials with signed-certificate and key."
-          echo ${CLIENT_CERT} | base64 -d > client.crt
-          echo ${CLIENT_KEY} | base64 -d > client.key
-          kubectl config set-credentials ${USER} --client-certificate=client.crt --client-key=client.key
-        else
-          echo "[ERROR] Required plugin parameters:"
-          echo " - client_cert"
-          echo " - client_key"
-          echo "are not provided"
-          exit 1
-        fi
-      else
-        echo "[ERROR] Required plugin param - auth_mode - not provided"
-        echo "[INFO] Should be either [ token | client-cert ]"
-        exit 1
+setSecureCluster(){
+  local CLUSTER=$1; shift
+  local SERVER_URL=$1; shift
+  local SERVER_CERT=$1
+
+  echo "[INFO] Using secure connection with tls-certificate."
+  echo ${SERVER_CERT} | base64 -d > ca.crt
+  kubectl config set-cluster ${CLUSTER} --server=${SERVER_URL} --certificate-authority=ca.crt
+}
+
+setInsecureCluster(){
+  local CLUSTER=$1; shift
+  local SERVER_URL=$1
+
+  echo "[WARNING] Using insecure connection to cluster"
+  kubectl config set-cluster ${CLUSTER} --server=${SERVER_URL} --insecure-skip-tls-verify=true
+}
+
+setClientToken(){
+  local USER=$1; shift
+  local SERVER_TOKEN=$1
+
+  echo "[INFO] Setting client credentials with token"
+  kubectl config set-credentials ${USER} --token=${SERVER_TOKEN}
+}
+
+setClientCertAndKey(){
+  local USER=$1; shift
+  local CLIENT_CERT=$1; shift
+  local CLIENT_KEY=$1
+
+  echo "[INFO] Setting client credentials with signed-certificate and key."
+  echo ${CLIENT_CERT} | base64 -d > client.crt
+  echo ${CLIENT_KEY} | base64 -d > client.key
+  kubectl config set-credentials ${USER} --client-certificate=client.crt --client-key=client.key
+}
+
+setContext(){
+  local CLUSTER=$1; shift
+  local USER=$1
+
+  kubectl config set-context ${CLUSTER} --cluster=${CLUSTER} --user=${USER}
+  kubectl config use-context ${CLUSTER}
+}
+
+pollDeploymentRollout(){
+  local NAMESPACE=$1; shift
+  local DEPLOY=$1
+  local TIMEOUT=600
+
+  # wait on deployment rollout status
+  echo "[INFO] Watching ${DEPLOY} rollout status..."
+  while true; do
+    result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
+    echo ${result}
+    if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
+      return 0
+    else
+      # TODO: more conditions for error handling based on result text
+      sleep 10
+      TIMEOUT=$((TIMEOUT-10))
+      if [ "${TIMEOUT}" -eq 0 ]; then
+        return 1
       fi
     fi
+  done
+}
+
+startDeployment(){
+  local NAMESPACE=$1; shift
+  local DEPLOY=$1; shift
+  local CONTAINER=$1
+
+  kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
+    ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
+
+  pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
+  if [ "$?" -eq 0 ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+startDeployments(){
+  local CLUSTER=$1; shift
+  local NAMESPACE=$1
+
+  IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
+  IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
+
+  for DEPLOY in ${DEPLOYMENTS[@]}; do
+    echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
+    for CONTAINER in ${CONTAINERS[@]}; do
+      startDeployment ${NAMESPACE} ${DEPLOY} ${CONTAINER}
+      if [ "$?" -eq 0 ]; then
+        continue
+      else
+        exit 0
+      fi
+    done
+  done
+}
+
+clientAuthToken(){
+  local CLUSTER=$1; shift
+  local USER=$1
+
+  echo "[INFO] Using Server token to authorize"
+
+  CLIENT_TOKEN_VAR=CLIENT_TOKEN_${CLUSTER}
+  CLIENT_TOKEN=${!CLIENT_TOKEN_VAR}
+
+  if [[ ! -z "${CLIENT_TOKEN}" ]]; then
+    setClientToken ${USER} ${CLIENT_TOKEN}
+  else
+    echo "[ERROR] Required plugin secrets:"
+    echo " - ${CLIENT_TOKEN_VAR}"
+    echo "not provided."
+    exit 1
+  fi
+}
+
+clientAuthCert(){
+  local CLUSTER=$1; shift
+  local USER=$1
+
+  echo "[INFO] Using Client cert and Key to authorize"
+  CLIENT_CERT_VAR=CLIENT_CERT_${CLUSTER}
+  CLIENT_KEY_VAR=CLIENT_KEY_${CLUSTER}
+  # expand
+  CLIENT_CERT=${!CLIENT_CERT_VAR}
+  CLIENT_KEY=${!CLIENT_KEY_VAR}
+
+  if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
+    setClientCertAndKey ${USER} ${CLIENT_CERT} ${CLIENT_KEY}
+  else
+    echo "[ERROR] Required plugin secrets:"
+    echo " - ${CLIENT_CERT_VAR}"
+    echo " - ${CLIENT_KEY_VAR}"
+    echo "not provided"
+    exit 1
+  fi
+}
+
+clientAuth(){
+  local AUTH_MODE=$1; shift
+  local CLUSTER=$1; shift
+  local USER=$1
+
+  if [ ! -z ${AUTH_MODE} ]; then
+    if [[ "${AUTH_MODE}" == "token" ]]; then
+      clientAuthToken ${CLUSTER} ${USER}
+    elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
+      clientAuthCert ${CLUSTER} ${USER}
+    else
+      echo "[ERROR] Required plugin param - auth_mode - Should be either:"
+      echo "[ token | client-cert ]"
+      exit 1
+    fi
+  else
+    echo "[ERROR] Required plugin param - auth_mode - not provided"
+    exit 1
+  fi
+}
+
+clusterAuth(){
+  local SERVER_URL=$1; shift
+  local CLUSTER=$1; shift
+  local USER=$1
+
+  SERVER_CERT_VAR=SERVER_CERT_${CLUSTER}
+  SERVER_CERT=${!SERVER_CERT_VAR}
+
+  if [[ ! -z "${SERVER_CERT}" ]]; then
+    setSecureCluster ${CLUSTER} ${SERVER_URL} ${SERVER_CERT}
+    AUTH_MODE=${PLUGIN_AUTH_MODE}
+    clientAuth ${AUTH_MODE} ${CLUSTER} ${USER}
   else
     echo "[WARNING] Required plugin parameter: ${SERVER_CERT_VAR} not added!"
-    echo "[WARNING] Using insecure connection to cluster"
-    kubectl config set-cluster ${CLUSTER} --server=${SERVER_URL} --insecure-skip-tls-verify=true
+    setInsecureCluster ${CLUSTER} ${SERVER_URL}
   fi
-else
-  echo "[ERROR] Required pipeline parameter: cluster not provided"
-  exit 1
-fi
+}
 
-kubectl config set-context ${CLUSTER} --cluster=${CLUSTER} --user=${USER}
-kubectl config use-context ${CLUSTER}
-
-# kubectl version
-IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
-IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
-for DEPLOY in ${DEPLOYMENTS[@]}; do
-  echo Deploying to ${CLUSTER}
-  for CONTAINER in ${CONTAINERS[@]}; do
-    kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
-      ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-  done
-  # wait on deployment rollout status
-  # kubectl -n ${NAMESPACE} rollout status deployment/${DEPLOY}
-done
+setGlobals
+clusterAuth ${SERVER_URL} ${CLUSTER} ${USER}
+setContext ${CLUSTER} ${USER}
+startDeployments ${CLUSTER} ${NAMESPACE}
