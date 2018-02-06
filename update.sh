@@ -116,10 +116,10 @@ pollDeploymentRollout(){
 startDeployment(){
   local NAMESPACE=$1; shift
   local DEPLOY=$1; shift
-  local CONTAINER=$1
+  local CONTAINER_UPDATE_LIST=$1
 
   kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
-    ${CONTAINER}="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
+    "${CONTAINER_UPDATE_LIST}" --record
 
   pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
   if [ "$?" -eq 0 ]; then
@@ -139,13 +139,14 @@ startDeployments(){
   for DEPLOY in ${DEPLOYMENTS[@]}; do
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
     for CONTAINER in ${CONTAINERS[@]}; do
-      startDeployment ${NAMESPACE} ${DEPLOY} ${CONTAINER}
-      if [ "$?" -eq 0 ]; then
-        continue
-      else
-        exit 0
-      fi
+      CONTAINER_UPDATE_LIST+="${CONTAINER}=${PLUGIN_REPO}:${PLUGIN_TAG} "
     done
+    startDeployment ${NAMESPACE} ${DEPLOY} ${CONTAINER_UPDATE_LIST}
+    if [ "$?" -eq 0 ]; then
+      continue
+    else
+      exit 0
+    fi
   done
 }
 
