@@ -9,7 +9,8 @@ This plugin allows to update a Kubernetes deployment.
 
 ## Usage
 
-This pipeline will update the `my-deployment` deployment with the image tagged `DRONE_COMMIT_SHA:0:8`
+This pipeline will update the all containers of `[kubernetes-deployements, ...]` deployment
+with the image tagged `${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}`
 
 ```yaml
 pipeline:
@@ -29,7 +30,6 @@ pipeline:
     auth_mode: [ token | client-cert ] // provide only if providing server_cert_<cluster>
     deployment: [<kubernetes-deployements, ...>]
     repo: <org/repo>
-    container: [ <containers,...> ]
     namespace: <kubernetes-namespace>
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
