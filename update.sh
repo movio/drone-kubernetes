@@ -6,7 +6,6 @@ USER=""
 NAMESPACE=""
 CLUSTER=""
 DEPLOYMENTS=""
-CONTAINERS=""
 SERVER_URL=""
 
 # set globals
@@ -113,31 +112,18 @@ pollDeploymentRollout(){
   done
 }
 
-startDeployment(){
-  local NAMESPACE=$1; shift
-  local DEPLOY=$1; shift
-  local CONTAINER=$1
-
-  kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
-    *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-  pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
-  if [ "$?" -eq 0 ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
 startDeployments(){
   local CLUSTER=$1; shift
   local NAMESPACE=$1
 
   IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
-  IFS=',' read -r -a CONTAINERS <<< "${PLUGIN_CONTAINER}"
 
   for DEPLOY in ${DEPLOYMENTS[@]}; do
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
-    startDeployment ${NAMESPACE} ${DEPLOY} ${CONTAINER}
+    kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
+      *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
+    pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
+
     if [ "$?" -eq 0 ]; then
       continue
     else
