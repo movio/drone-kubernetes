@@ -9,12 +9,14 @@ This plugin allows to update a Kubernetes deployment.
 
 ## Usage
 
+### Deployment
 This pipeline will update the all containers of `[kubernetes-deployements, ...]` deployment
 with the image tagged `${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}`
 
 ```yaml
 pipeline:
   deploy:
+    kind: deployment
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
@@ -28,9 +30,9 @@ pipeline:
     user: <kubernetes-user with a cluster-rolebinding>
     cluster: <kubernetes-cluster>
     auth_mode: [ token | client-cert ] // provide only if providing server_cert_<cluster>
-    deployment: [<kubernetes-deployements, ...>]
-    repo: <org/repo>
     namespace: <kubernetes-namespace>
+    repo: <org/repo>
+    deployment: [<kubernetes-deployements, ...>]
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
       - ...
@@ -42,6 +44,37 @@ pipeline:
         include: [deployment]
 ```
 
+### Job
+This pipeline will run the `roast` job described in `./roast.yml`.
+
+```yaml
+pipeline:
+  run-roast-job:
+    kind: job
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_<cluster>
+      - server_cert_<cluster>
+      - client_cert_<cluster> / - server_token_<cluster>
+      - client_key_<cluster> / - server_token_<cluster>
+      - ...
+    user: <kubernetes-user with a cluster-rolebinding>
+    cluster: <kubernetes-cluster>
+    auth_mode: [ token | client-cert ] // provide only if providing server_cert_<cluster>
+    namespace: <kubernetes-namespace>
+    job: <kubernetes job name>
+    spec: '<path/to/job/spec.yaml>'
+    when:
+      environment: <kubernetes-cluster>
+      branch: [ <branches>,... ]
+      event:
+        exclude: [push, pull_request, tag]
+        include: [deployment]
+
+```
 
 ## Required secrets
 
