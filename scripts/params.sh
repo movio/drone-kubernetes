@@ -6,6 +6,7 @@ USER=""
 NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
+KUBE_KIND=""
 
 # set globals
 setUser(){
@@ -21,7 +22,21 @@ setCluster(){
     # convert cluster name to ucase and assign
     CLUSTER=${PLUGIN_CLUSTER^^}
   else
-    echo "[ERROR] Required pipeline parameter: cluster not provided"
+    echo "[ERROR] Required pipeline parameter: 'cluster' not provided"
+    exit 1
+  fi
+}
+
+setKind(){
+  if [ ! -z ${PLUGIN_KIND} ]; then
+    KUBE_KIND=${PLUGIN_KIND^^}
+    if [[ ${KUBE_KIND} != "DEPLOYMENT" ]] || [[ ${KUBE_KIND} != "JOB" ]] ; then
+      echo "[ERROR] Unsupported kubernetes kind: ${KUBE_KIND}"
+      echo "[INFO] Supported kinds: [ deployment, job ]"
+      exit 1
+    fi
+  else
+    echo "[ERROR] Required pipeline parameter: 'kind' not provided"
     exit 1
   fi
 }
@@ -31,7 +46,7 @@ setServerUrl(){
   local SERVER_URL_VAR=SERVER_URL_${CLUSTER}
   SERVER_URL=${!SERVER_URL_VAR}
   if [[ -z "${SERVER_URL}" ]]; then
-    echo "[ERROR] Required drone secret: ${SERVER_URL_VAR} not added!"
+    echo "[ERROR] Required drone secret: '${SERVER_URL_VAR}' not added!"
     exit 1
   fi
 }
