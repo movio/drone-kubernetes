@@ -36,7 +36,7 @@ startDeployments(){
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
     kubectl set image deployment/${DEPLOY} \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
+    pollDeploymentRollout ${DEPLOY}
 
     if [ "$?" -eq 0 ]; then
       continue

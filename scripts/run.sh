@@ -15,5 +15,7 @@ source ${BASEDIR}/${KUBE_KIND,,}.sh
 if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then
   startDeployments ${CLUSTER} ${NAMESPACE}
 elif [[ "${KUBE_KIND}" == "JOB" ]]; then
-  startJob ${CLUSTER}
+  startJob ${CLUSTER} ${NAMESPACE}
+elif [[ "${KUBE_KIND}" == "CRONJOB" ]]; then
+   patchCronJob ${CLUSTER} ${NAMESPACE}
 fi
