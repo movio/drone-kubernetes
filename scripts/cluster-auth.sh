@@ -42,7 +42,7 @@ setContext(){
   local CLUSTER=$1; shift
   local USER=$1
 
-  kubectl config set-context ${CLUSTER} --cluster=${CLUSTER} --user=${USER}
+  kubectl config set-context ${CLUSTER} --cluster=${CLUSTER} --namespace=${NAMESPACE} --user=${USER}
   kubectl config use-context ${CLUSTER}
 }
 
