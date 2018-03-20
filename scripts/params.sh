@@ -30,7 +30,7 @@ setCluster(){
 setKind(){
   if [ ! -z ${PLUGIN_KIND} ]; then
     KUBE_KIND=${PLUGIN_KIND^^}
-    if [[ ${KUBE_KIND} =~ ^(DEPLOYMENT|JOB|CRONJOB)$ ]]; then
+    if [[ ! "${KUBE_KIND}" =~ ^(DEPLOYMENT|JOB|CRONJOB)$ ]]; then
       echo "[ERROR] Unsupported kubernetes kind: ${KUBE_KIND}"
       echo "[INFO] Supported kinds: [ deployment, job, cronjob ]"
       exit 1
