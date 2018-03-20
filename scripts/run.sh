@@ -10,10 +10,10 @@ setGlobals
 clusterAuth ${SERVER_URL} ${CLUSTER} ${USER}
 setContext ${CLUSTER} ${USER}
 
+source ${BASEDIR}/${KUBE_KIND,,}.sh
+
 if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then
-  source ${BASEDIR}/deploy.sh
   startDeployments ${CLUSTER} ${NAMESPACE}
-elif [[ "${KUBE_KIND}" == "JOB"]]; then
-  source ${BASEDIR}/job.sh
-  startJob ${CLUSTER} ${NAMESPACE}
+elif [[ "${KUBE_KIND}" == "JOB" ]]; then
+  startJob ${CLUSTER}
 fi

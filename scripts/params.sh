@@ -30,7 +30,7 @@ setCluster(){
 setKind(){
   if [ ! -z ${PLUGIN_KIND} ]; then
     KUBE_KIND=${PLUGIN_KIND^^}
-    if [[ ${KUBE_KIND} != "DEPLOYMENT" ]] || [[ ${KUBE_KIND} != "JOB" ]] ; then
+    if [[ ${KUBE_KIND} != "DEPLOYMENT" ]] && [[ ${KUBE_KIND} != "JOB" ]] ; then
       echo "[ERROR] Unsupported kubernetes kind: ${KUBE_KIND}"
       echo "[INFO] Supported kinds: [ deployment, job ]"
       exit 1
@@ -55,5 +55,6 @@ setGlobals(){
   setUser
   setNamespace
   setCluster
+  setKind
   setServerUrl
 }
