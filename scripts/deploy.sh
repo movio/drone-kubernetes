@@ -5,14 +5,13 @@ set -euo pipefail
 DEPLOYMENTS=""
 
 pollDeploymentRollout(){
-  local NAMESPACE=$1; shift
-  local DEPLOY=$1
+  local DEPLOY=$1; shift
   local TIMEOUT=600
 
   # wait on deployment rollout status
   echo "[INFO] Watching ${DEPLOY} rollout status..."
   while true; do
-    result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
+    result=`kubectl rollout status --watch=false --revision=0 deployment/${DEPLOY}`
     echo ${result}
     if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
       return 0
@@ -35,7 +34,7 @@ startDeployments(){
 
   for DEPLOY in ${DEPLOYMENTS[@]}; do
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
-    kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
+    kubectl set image deployment/${DEPLOY} \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
     pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
 
