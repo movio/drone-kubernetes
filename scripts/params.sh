@@ -36,9 +36,24 @@ setServerUrl(){
   fi
 }
 
+setKind(){
+  if [ ! -z ${PLUGIN_KIND} ]; then
+    # convert cluster name to ucase and assign
+    KUBE_KIND=${PLUGIN_KIND^^}
+    if [[ ! "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET)$ ]]
+    echo "[ERROR] Only deployment and daemonset kinds are supported now."
+    echo 1
+    fi
+  else
+    KUBE_KIND="DEPLOYMENT"
+    echo "[WARN] Required pipeline parameter: kind not provided, defaulting to deployment."
+  fi
+}
+
 setGlobals(){
   setUser
   setNamespace
   setCluster
   setServerUrl
+  setKind
 }

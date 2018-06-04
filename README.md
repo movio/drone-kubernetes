@@ -17,6 +17,7 @@ pipeline:
   deploy:
     image: razorpay/drone-kubernetes
     pull: true
+    kind: [ deployment | daemonset ] // required going forward, defaults to deployment
     secrets:
       - docker_username
       - docker_password
