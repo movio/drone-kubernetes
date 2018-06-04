@@ -1,0 +1,19 @@
+version: '3'
+services:
+    plugin:
+        build: .
+        environment:
+        - PLUGIN_KIND=daemonset
+        - PLUGIN_DEPLOYMENT=api-web 
+        - PLUGIN_DAEMONSET=api-web 
+        - PLUGIN_USER=razorpay 
+        - PLUGIN_NAMESPACE=default 
+        - PLUGIN_CLUSTER=stage 
+        - PLUGIN_AUTH_MODE=client-cert 
+        - PLUGIN_TAG=latest 
+        - PLUGIN_REPO=octocat/hello-world 
+        - SERVER_URL_STAGE=https://kube-stage.k8s.razorpay.com.:443
+        - SERVER_CERT_STAGE=XXXX
+        - CLIENT_CERT_STAGE=XXXX
+        - CLIENT_KEY_STAGE=XXXX
+        - DRONE_COMMIT_SHA=d8dbe4d94f15fe89232e0402c6e8a0ddf21af3ab 

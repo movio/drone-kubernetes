@@ -130,6 +130,12 @@ kubectl -n web get secrets
 kubectl -n web get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:'
 ```
 
+## Local testing
+
+With the docker-compose.yaml file, a default run of the plugin can be made.
+Use the build flag to rebuild the image of the plugin.
+Run with `docker-compose up`.
+
 ## To do
 
 Replace the current kubectl bash script with a go implementation.
