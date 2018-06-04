@@ -36,7 +36,7 @@ startDaemonsets(){
     echo "[INFO] Deploying ${DAEMONSET} to ${CLUSTER} ${NAMESPACE}"
     kubectl -n ${NAMESPACE} set image daemonset/${DAEMONSET} \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    pollDaemonsetRollout ${NAMESPACE} ${DEPLOY}
+    pollDaemonsetRollout ${NAMESPACE} ${DAEMONSET}
 
     if [ "$?" -eq 0 ]; then
       continue

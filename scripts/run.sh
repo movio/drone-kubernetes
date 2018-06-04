@@ -18,6 +18,6 @@ setContext ${CLUSTER} ${USER}
 
 if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then
     startDeployments ${CLUSTER} ${NAMESPACE}
-elif [[ ${KUBE_KIND} == "DAEMONSET"]]; then
+elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
     startDaemonsets ${CLUSTER} ${NAMESPACE}
 fi
