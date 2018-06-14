@@ -17,6 +17,7 @@ pipeline:
   deploy:
     image: razorpay/drone-kubernetes
     pull: true
+    kind: [ deployment | daemonset ] // required going forward, defaults to deployment
     secrets:
       - docker_username
       - docker_password
@@ -128,6 +129,12 @@ kubectl -n web get secrets
 # Substitute XXXXX below with the correct one from the above command
 kubectl -n web get secret/drone-deploy-token-XXXXX -o yaml | egrep 'ca.crt:|token:'
 ```
+
+## Local testing
+
+With the docker-compose.yaml file, a default run of the plugin can be made.
+Use the build flag to rebuild the image of the plugin.
+Run with `docker-compose up`.
 
 ## To do
 
