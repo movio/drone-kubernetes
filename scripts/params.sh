@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+set -o nounset
 
 # globals
 USER=""
@@ -37,7 +38,7 @@ setServerUrl(){
 }
 
 setKind(){
-  if [ ! -z ${PLUGIN_KIND} ]; then
+  if [ ! -z ${PLUGIN_KIND:-} ]; then
     # convert cluster name to ucase and assign
     KUBE_KIND=${PLUGIN_KIND^^}
     if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET)$ ]]; then
