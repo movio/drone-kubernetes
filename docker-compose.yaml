@@ -8,11 +8,11 @@ services:
         - PLUGIN_DAEMONSET=api-web 
         - PLUGIN_USER=razorpay 
         - PLUGIN_NAMESPACE=default 
-        - PLUGIN_CLUSTER=stage 
+        - PLUGIN_CLUSTER=kluster-api
         - PLUGIN_AUTH_MODE=client-cert 
         - PLUGIN_TAG=latest 
         - PLUGIN_REPO=octocat/hello-world 
-        - SERVER_URL_STAGE=https://kube-stage.k8s.razorpay.com.:443
+        - SERVER_URL_KLUSTERAPI=https://kluster-api.k8s.razorpay.com.:443
         - SERVER_CERT_STAGE=XXXX
         - CLIENT_CERT_STAGE=XXXX
         - CLIENT_KEY_STAGE=XXXX

@@ -21,6 +21,7 @@ setCluster(){
   if [ ! -z ${PLUGIN_CLUSTER} ]; then
     # convert cluster name to ucase and assign
     CLUSTER=${PLUGIN_CLUSTER^^}
+    CLUSTER=${CLUSTER//-}
   else
     echo "[ERROR] Required pipeline parameter: cluster not provided"
     exit 1
