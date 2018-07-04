@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-
+echo "[DEBUG] bash version is `bash --version`"
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )
 
 source ${BASEDIR}/params.sh
