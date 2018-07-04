@@ -21,6 +21,8 @@ setCluster(){
   if [ ! -z ${PLUGIN_CLUSTER} ]; then
     # convert cluster name to ucase and assign
     CLUSTER=${PLUGIN_CLUSTER^^}
+    CLUSTER=${CLUSTER//-}
+    echo "CLUSTER is defined as ${CLUSTER}"
   else
     echo "[ERROR] Required pipeline parameter: cluster not provided"
     exit 1
@@ -30,7 +32,9 @@ setCluster(){
 setServerUrl(){
   # create dynamic cert var names
   local SERVER_URL_VAR=SERVER_URL_${CLUSTER}
+  echo "Set up for SERVER_URL_VAR as SERVER_URL_${CLUSTER}"
   SERVER_URL=${!SERVER_URL_VAR}
+  echo "SERVER_URL is ${SERVER_URL} ${!SERVER_URL_VAR}"
   if [[ -z "${SERVER_URL}" ]]; then
     echo "[ERROR] Required drone secret: '${SERVER_URL_VAR}' not added!"
     exit 1
