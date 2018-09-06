@@ -6,18 +6,33 @@ DAEMONSETS=""
 
 pollDaemonsetRollout(){
   local NAMESPACE=$1; shift
-  local DAEMONSET=$1
   local TIMEOUT=600
+  local SUCCESS_COUNT=${#DAEMONSETS[@]}
 
-  # wait on deployment rollout status
-  echo "[INFO] Watching ${DAEMONSET} rollout status..."
+  # wait on DAEMONSETS rollout status
+  echo ""
+  echo "[INFO] Watching rollout status..."
   while true; do
-    result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 daemonset/${DAEMONSET}`
-    echo ${result}
-    if [[ "${result}" == "daemon set \"${DAEMONSET}\" successfully rolled out" ]]; then
+    echo "--------------"
+    echo ""
+    for DAEMONSET in "${DAEMONSETS[@]}"; do
+      result=$(kubectl -n "${NAMESPACE}" rollout status --watch=false --revision=0 ds/"${DAEMONSET}")
+      echo "${DAEMONSET} :"
+      echo "${result}"
+      echo ""
+      if [[ "${result}" == "daemonset \"${DAEMONSET}\" successfully rolled out" ]]; then
+        SUCCESS_COUNT=$((SUCCESS_COUNT-1))
+      fi
+    done
+    if [ "${SUCCESS_COUNT}" -eq 0 ]; then
+      echo "--------------" 
+      echo ""
+      echo "All deployed successfully!"
       return 0
     else
       # TODO: more conditions for error handling based on result text
+      echo "--------------" 
+      echo ""
       sleep 10
       TIMEOUT=$((TIMEOUT-10))
       if [ "${TIMEOUT}" -eq 0 ]; then
@@ -30,18 +45,17 @@ pollDaemonsetRollout(){
 startDaemonsets(){
   local CLUSTER=$1; shift
   local NAMESPACE=$1
-
-  IFS=',' read -r -a DAEMONSETS <<< "${PLUGIN_DAEMONSET}"
-  for DAEMONSET in ${DAEMONSETS[@]}; do
+  IFS=',' read -r -a DAEMONSETS <<< "${PLUGIN_DEPLOYMENT}"
+  for DAEMONSET in "${DAEMONSETS[@]}"; do
+    echo ""
     echo "[INFO] Deploying ${DAEMONSET} to ${CLUSTER} ${NAMESPACE}"
-    kubectl -n ${NAMESPACE} set image daemonset/${DAEMONSET} \
+    kubectl -n "${NAMESPACE}" set image ds/"${DAEMONSET}" \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    pollDaemonsetRollout ${NAMESPACE} ${DAEMONSET}
-
     if [ "$?" -eq 0 ]; then
       continue
     else
       exit 0
     fi
   done
+  pollDaemonsetRollout "${NAMESPACE}"
 }

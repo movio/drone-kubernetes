@@ -4,7 +4,6 @@ set -o nounset
 
 # globals
 USER=""
-NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
 
@@ -13,12 +12,8 @@ setUser(){
   USER=${PLUGIN_USER:-default}
 }
 
-setNamespace(){
-  NAMESPACE=${PLUGIN_NAMESPACE:-default}
-}
-
 setCluster(){
-  if [ ! -z ${PLUGIN_CLUSTER} ]; then
+  if [ ! -z "${PLUGIN_CLUSTER}" ]; then
     # convert cluster name to ucase and assign
     CLUSTER=${PLUGIN_CLUSTER^^}
     CLUSTER=${CLUSTER//-}
@@ -39,7 +34,7 @@ setServerUrl(){
 }
 
 setKind(){
-  if [ ! -z ${PLUGIN_KIND:-} ]; then
+  if [ ! -z "${PLUGIN_KIND:-}" ]; then
     # convert cluster name to ucase and assign
     KUBE_KIND=${PLUGIN_KIND^^}
     if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET)$ ]]; then
@@ -54,7 +49,6 @@ setKind(){
 
 setGlobals(){
   setUser
-  setNamespace
   setCluster
   setServerUrl
   setKind

@@ -15,10 +15,10 @@ pollDeploymentRollout(){
   while true; do
     echo "--------------"
     echo ""
-    for DEPLOY in ${DEPLOYMENTS[@]}; do
-      result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
-      echo ${DEPLOY} ":"
-      echo ${result}
+    for DEPLOY in "${DEPLOYMENTS[@]}"; do
+      result=$(kubectl -n "${NAMESPACE}" rollout status --watch=false --revision=0 deployment/"${DEPLOY}")
+      echo "${DEPLOY}" ":"
+      echo "${result}"
       echo ""
       if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
         SUCCESS_COUNT=$((SUCCESS_COUNT-1))
@@ -46,11 +46,10 @@ startDeployments(){
   local CLUSTER=$1; shift
   local NAMESPACE=$1
   IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
-  local deps=${DEPLOYMENTS[@]}
-  for DEPLOY in ${deps[@]}; do
+  for DEPLOY in "${DEPLOYMENTS[@]}"; do
     echo ""
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
-    kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
+    kubectl -n "${NAMESPACE}" set image deployment/"${DEPLOY}" \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
     if [ "$?" -eq 0 ]; then
       continue
@@ -58,5 +57,5 @@ startDeployments(){
       exit 0
     fi
   done
-  pollDeploymentRollout ${NAMESPACE} ${deps[@]}
+  pollDeploymentRollout "${NAMESPACE}"
 }
