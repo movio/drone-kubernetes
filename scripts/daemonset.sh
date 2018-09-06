@@ -45,7 +45,7 @@ pollDaemonsetRollout(){
 startDaemonsets(){
   local CLUSTER=$1; shift
   local NAMESPACE=$1
-  IFS=',' read -r -a DAEMONSETS <<< "${PLUGIN_DEPLOYMENT}"
+  IFS=',' read -r -a DAEMONSETS <<< "${PLUGIN_DAEMONSET}"
   for DAEMONSET in "${DAEMONSETS[@]}"; do
     echo ""
     echo "[INFO] Deploying ${DAEMONSET} to ${CLUSTER} ${NAMESPACE}"
