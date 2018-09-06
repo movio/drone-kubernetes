@@ -4,12 +4,17 @@ set -o nounset
 
 # globals
 USER=""
+NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
 
 # set globals
 setUser(){
   USER=${PLUGIN_USER:-default}
+}
+
+setNamespace(){
+  NAMESPACE=${PLUGIN_NAMESPACE:-default}
 }
 
 setCluster(){
@@ -49,6 +54,7 @@ setKind(){
 
 setGlobals(){
   setUser
+  setNamespace
   setCluster
   setServerUrl
   setKind
