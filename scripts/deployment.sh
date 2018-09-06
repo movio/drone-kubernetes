@@ -6,18 +6,33 @@ DEPLOYMENTS=""
 
 pollDeploymentRollout(){
   local NAMESPACE=$1; shift
-  local DEPLOY=$1
   local TIMEOUT=600
+  local SUCCESS_COUNT=${#DEPLOYMENTS[@]}
 
-  # wait on deployment rollout status
-  echo "[INFO] Watching ${DEPLOY} rollout status..."
+  # wait on deployments rollout status
+  echo ""
+  echo "[INFO] Watching rollout status..."
   while true; do
-    result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
-    echo ${result}
-    if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
+    echo "--------------"
+    echo ""
+    for DEPLOY in ${DEPLOYMENTS[@]}; do
+      result=`kubectl -n ${NAMESPACE} rollout status --watch=false --revision=0 deployment/${DEPLOY}`
+      echo ${DEPLOY} ":"
+      echo ${result}
+      echo ""
+      if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
+        SUCCESS_COUNT=$((SUCCESS_COUNT-1))
+      fi
+    done
+    if [ "${SUCCESS_COUNT}" -eq 0 ]; then
+      echo "--------------" 
+      echo ""
+      echo "All deployed successfully!"
       return 0
     else
       # TODO: more conditions for error handling based on result text
+      echo "--------------" 
+      echo ""
       sleep 10
       TIMEOUT=$((TIMEOUT-10))
       if [ "${TIMEOUT}" -eq 0 ]; then
@@ -30,19 +45,18 @@ pollDeploymentRollout(){
 startDeployments(){
   local CLUSTER=$1; shift
   local NAMESPACE=$1
-
   IFS=',' read -r -a DEPLOYMENTS <<< "${PLUGIN_DEPLOYMENT}"
-
-  for DEPLOY in ${DEPLOYMENTS[@]}; do
+  local deps=${DEPLOYMENTS[@]}
+  for DEPLOY in ${deps[@]}; do
+    echo ""
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
     kubectl -n ${NAMESPACE} set image deployment/${DEPLOY} \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    pollDeploymentRollout ${NAMESPACE} ${DEPLOY}
-
     if [ "$?" -eq 0 ]; then
       continue
     else
       exit 0
     fi
   done
+  pollDeploymentRollout ${NAMESPACE} ${deps[@]}
 }
