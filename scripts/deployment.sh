@@ -28,7 +28,7 @@ pollDeploymentRollout(){
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"
-      return 0
+      exit 0
     else
       # TODO: more conditions for error handling based on result text
       echo "--------------" 
@@ -51,11 +51,6 @@ startDeployments(){
     echo "[INFO] Deploying ${DEPLOY} to ${CLUSTER} ${NAMESPACE}"
     kubectl -n "${NAMESPACE}" set image deployment/"${DEPLOY}" \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    if [ "$?" -eq 0 ]; then
-      continue
-    else
-      exit 0
-    fi
   done
   pollDeploymentRollout "${NAMESPACE}"
 }

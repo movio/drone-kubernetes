@@ -28,7 +28,7 @@ pollDaemonsetRollout(){
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"
-      return 0
+      exit 0
     else
       # TODO: more conditions for error handling based on result text
       echo "--------------" 
@@ -51,11 +51,6 @@ startDaemonsets(){
     echo "[INFO] Deploying ${DAEMONSET} to ${CLUSTER} ${NAMESPACE}"
     kubectl -n "${NAMESPACE}" set image ds/"${DAEMONSET}" \
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
-    if [ "$?" -eq 0 ]; then
-      continue
-    else
-      exit 0
-    fi
   done
   pollDaemonsetRollout "${NAMESPACE}"
 }
