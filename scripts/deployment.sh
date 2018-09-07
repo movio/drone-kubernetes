@@ -15,16 +15,17 @@ pollDeploymentRollout(){
   while true; do
     echo "--------------"
     echo ""
+    SUCCESS_COUNT=0
     for DEPLOY in "${DEPLOYMENTS[@]}"; do
       result=$(kubectl -n "${NAMESPACE}" rollout status --watch=false --revision=0 deployment/"${DEPLOY}")
       echo "${DEPLOY}" ":"
       echo "${result}"
       echo ""
       if [[ "${result}" == "deployment \"${DEPLOY}\" successfully rolled out" ]]; then
-        SUCCESS_COUNT=$((SUCCESS_COUNT-1))
+        SUCCESS_COUNT=$((SUCCESS_COUNT+1))
       fi
     done
-    if [ "${SUCCESS_COUNT}" -eq 0 ]; then
+    if [ "${#DEPLOYMENTS[@]}" == "$SUCCESS_COUNT" ]; then
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"

@@ -15,16 +15,17 @@ pollDaemonsetRollout(){
   while true; do
     echo "--------------"
     echo ""
+    SUCCESS_COUNT=0
     for DAEMONSET in "${DAEMONSETS[@]}"; do
       result=$(kubectl -n "${NAMESPACE}" rollout status --watch=false --revision=0 ds/"${DAEMONSET}")
       echo "${DAEMONSET} :"
       echo "${result}"
       echo ""
       if [[ "${result}" == "daemonset \"${DAEMONSET}\" successfully rolled out" ]]; then
-        SUCCESS_COUNT=$((SUCCESS_COUNT-1))
+        SUCCESS_COUNT=$((SUCCESS_COUNT+1))
       fi
     done
-    if [ "${SUCCESS_COUNT}" -eq 0 ]; then
+    if [ "${#DAEMONSETS[@]}" == "$SUCCESS_COUNT" ]; then
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"
