@@ -28,7 +28,7 @@ pollDaemonsetRollout(){
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"
-      exit 0
+      return 0
     else
       # TODO: more conditions for error handling based on result text
       echo "--------------" 
@@ -53,4 +53,5 @@ startDaemonsets(){
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
   pollDaemonsetRollout "${NAMESPACE}"
+  exit 0
 }

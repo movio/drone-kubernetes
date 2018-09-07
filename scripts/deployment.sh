@@ -28,7 +28,7 @@ pollDeploymentRollout(){
       echo "--------------" 
       echo ""
       echo "All deployed successfully!"
-      exit 0
+      return 0
     else
       # TODO: more conditions for error handling based on result text
       echo "--------------" 
@@ -53,4 +53,5 @@ startDeployments(){
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
   pollDeploymentRollout "${NAMESPACE}"
+  exit 0
 }
