@@ -21,7 +21,7 @@ pollDaemonsetRollout(){
       echo "${DAEMONSET} :"
       echo "${result}"
       echo ""
-      if [[ "${result}" == "daemonset \"${DAEMONSET}\" successfully rolled out" ]]; then
+      if [[ "${result}" == "daemon set \"${DAEMONSET}\" successfully rolled out" ]]; then
         SUCCESS_COUNT=$((SUCCESS_COUNT+1))
       fi
     done
