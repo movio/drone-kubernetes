@@ -18,7 +18,7 @@ setNamespace(){
 }
 
 setCluster(){
-  if [ ! -z ${PLUGIN_CLUSTER} ]; then
+  if [ ! -z "${PLUGIN_CLUSTER}" ]; then
     # convert cluster name to ucase and assign
     CLUSTER=${PLUGIN_CLUSTER^^}
     CLUSTER=${CLUSTER//-}
@@ -39,7 +39,7 @@ setServerUrl(){
 }
 
 setKind(){
-  if [ ! -z ${PLUGIN_KIND:-} ]; then
+  if [ ! -z "${PLUGIN_KIND:-}" ]; then
     # convert cluster name to ucase and assign
     KUBE_KIND=${PLUGIN_KIND^^}
     if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET)$ ]]; then
