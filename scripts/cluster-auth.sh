@@ -29,8 +29,8 @@ setClientToken(){
 
 setClientCertAndKey(){
     local USER=$1; shift
-    local CLIENT_CERT=$1; shift
     local CLUSTER=$1; shift
+    local CLIENT_CERT=$1; shift
     local CLIENT_KEY=$1
     
     echo "[INFO] Setting client credentials with signed-certificate and key."
@@ -78,7 +78,7 @@ clientAuthCert(){
     CLIENT_KEY=${!CLIENT_KEY_VAR}
     
     if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
-        setClientCertAndKey "${USER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
+        setClientCertAndKey "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
     else
         echo "[ERROR] Required plugin secrets:"
         echo " - ${CLIENT_CERT_VAR}"
