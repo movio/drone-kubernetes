@@ -54,5 +54,4 @@ startDeployments(){
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
   pollDeploymentRollout "${NAMESPACE}"
-  exit 0
 }

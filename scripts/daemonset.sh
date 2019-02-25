@@ -54,5 +54,4 @@ startDaemonsets(){
       *="${PLUGIN_REPO}:${PLUGIN_TAG}" --record
   done
   pollDaemonsetRollout "${NAMESPACE}"
-  exit 0
 }
