@@ -88,6 +88,33 @@ clientAuthCert(){
     fi
 }
 
+clientAuthAws(){
+    local CLUSTER=$1; shift
+    local USER=$1
+    
+    echo "[INFO] Using AWS IAM Authenticator to authorize"
+    echo "[INFO] Installing aws-iam-authenticator..."
+    curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/amd64/aws-iam-authenticator
+    chmod +x ./aws-iam-authenticator
+    mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
+    aws-iam-authenticator version
+
+    echo "[INFO] aws-iam-authenticator installed! Adding to kube config file..."
+
+    
+
+    
+    if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
+        setClientCertAndKey "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
+    else
+        echo "[ERROR] Required plugin secrets:"
+        echo " - ${CLIENT_CERT_VAR}"
+        echo " - ${CLIENT_KEY_VAR}"
+        echo "not provided"
+        exit 1
+    fi
+}
+
 clientAuth(){
     local AUTH_MODE=$1; shift
     local CLUSTER=$1; shift
@@ -98,9 +125,11 @@ clientAuth(){
             clientAuthToken "${CLUSTER}" "${USER}"
             elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
             clientAuthCert "${CLUSTER}" "${USER}"
+            elif [[ "${AUTH_MODE}" == "aws-iam-authenticator"]]; then
+            clientAuthAws "${CLUSTER}" "${USER}"
         else
             echo "[ERROR] Required plugin param - auth_mode - Should be either:"
-            echo "[ token | client-cert ]"
+            echo "[ token | client-cert | aws-iam-authenticator ]"
             exit 1
         fi
     else
