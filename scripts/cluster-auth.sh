@@ -39,6 +39,20 @@ setClientCertAndKey(){
     kubectl config set-credentials "${USER}" --client-certificate=${CLUSTER}_client.crt --client-key=${CLUSTER}_client.key
 }
 
+setAwsAuthenticator(){
+    local CLUSTER=$1; shift
+    
+    echo "[INFO] Setting aws iam authenticator in kube config."
+    kubectl config set-credentials "${USER}" --client-certificate=${CLUSTER}_client.crt --client-key=${CLUSTER}_client.key
+
+    sed -i -e 's/SERVER_ADDRESS/$SERVER_URL/g' /tmp/kubeconfig
+    sed -i -e 's/CLUSTER_NAME/$CLUSTER/g' /tmp/kubeconfig
+    mv /tmp/kubeconfig ~/.kube/config
+    kubectl config use-context "${CLUSTER}"
+
+    echo "[INFO] kubectl configured for ${CLUSTER}"
+}
+
 setContext(){
     local CLUSTER=$1; shift
     local USER=$1
@@ -96,15 +110,7 @@ clientAuthAws(){
     aws-iam-authenticator version
     echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
 
-    if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
-        setClientCertAndKey "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
-    else
-        echo "[ERROR] Required plugin secrets:"
-        echo " - ${CLIENT_CERT_VAR}"
-        echo " - ${CLIENT_KEY_VAR}"
-        echo "not provided"
-        exit 1
-    fi
+    setAwsAuthenticator "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
 }
 
 clientAuth(){

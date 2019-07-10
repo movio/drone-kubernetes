@@ -9,5 +9,7 @@ RUN apk --no-cache add curl ca-certificates bash && \
 
 
 COPY ./scripts /bin/scripts
+COPY ./scripts/kubeconfig /tmp/kubeconfig
+
 ENTRYPOINT ["/bin/bash"]
 CMD ["/bin/scripts/run.sh"]
