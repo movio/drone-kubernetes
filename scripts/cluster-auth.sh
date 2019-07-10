@@ -93,17 +93,9 @@ clientAuthAws(){
     local USER=$1
     
     echo "[INFO] Using AWS IAM Authenticator to authorize"
-    echo "[INFO] Installing aws-iam-authenticator..."
-    curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/amd64/aws-iam-authenticator
-    chmod +x ./aws-iam-authenticator
-    mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
     aws-iam-authenticator version
+    echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
 
-    echo "[INFO] aws-iam-authenticator installed! Adding to kube config file..."
-
-    
-
-    
     if [[ ! -z "${CLIENT_CERT}" ]] && [[ ! -z "${CLIENT_KEY}" ]]; then
         setClientCertAndKey "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
     else
