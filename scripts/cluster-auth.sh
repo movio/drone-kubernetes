@@ -60,7 +60,7 @@ setContext(){
     local CLUSTER=$1; shift
     local USER=$1
 
-    if [[ -z "${USER}" ]]; then
+    if [[ ! "${USER}" == "default" ]]; then
         kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
         kubectl config use-context "${CLUSTER}"
     else
@@ -129,7 +129,9 @@ clientAuthAws(){
 clientAuth(){
     local AUTH_MODE=$1; shift
     local CLUSTER=$1; shift
-    local USER=$1
+    local USER=$1; shift
+    local SERVER_URL=$1; shift
+    local ROLE=$1
     
     if [ ! -z "${AUTH_MODE}" ]; then
         if [[ "${AUTH_MODE}" == "token" ]]; then
@@ -137,7 +139,7 @@ clientAuth(){
         elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
             clientAuthCert "${CLUSTER}" "${USER}"
         elif [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
-            clientAuthAws "${CLUSTER}" "${USER}"
+            clientAuthAws "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
         else
             echo "[ERROR] Required plugin param - auth_mode - Should be either:"
             echo "[ token | client-cert | aws-iam-authenticator ]"
@@ -159,7 +161,7 @@ clusterAuth(){
     SERVER_CERT_VAR=SERVER_CERT_"${CLUSTER}"
 
     if [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
-        clientAuthAws "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
+        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
     elif [[ ! -z "$SERVER_CERT_VAR}" ]]; then
         SERVER_CERT=${!SERVER_CERT_VAR}
         if [[ ! -z "${SERVER_CERT}" ]]; then
