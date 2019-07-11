@@ -3,25 +3,29 @@
 set -e
 
 assume_role_aws() {
-  if [ -z $PLUGIN_ROLE ];
+
+  local ROLE=$1; shift
+  local FILE=$1
+
+  if [ -z $ROLE ];
   then
       echo "Error: please provide aws role to assume"
       exit 1
   fi
 
-  if [ -z $PLUGIN_FILE ];
+  if [ -z $FILE ];
   then
       PLUGIN_FILE=".env"
   fi
 
-  echo "Assuming: ${PLUGIN_ROLE}"
-  CREDS=`aws sts assume-role --role-arn ${PLUGIN_ROLE} --role-session-name=${DRONE_REPO_OWNER}-${DRONE_REPO_NAME}`
+  echo "Assuming: ${ROLE}"
+  CREDS=`aws sts assume-role --role-arn ${ROLE} --role-session-name=${DRONE_REPO_OWNER}-${DRONE_REPO_NAME}`
 
-  AWS_ACCESS_KEY_ID=`echo $CREDS | jq -r '.Credentials.AccessKeyId'`
-  AWS_SECRET_ACCESS_KEY=`echo $CREDS | jq -r '.Credentials.SecretAccessKey'`
-  AWS_SESSION_TOKEN=`echo $CREDS | jq -r '.Credentials.SessionToken'`
+  export AWS_ACCESS_KEY_ID=`echo $CREDS | jq -r '.Credentials.AccessKeyId'`
+  export AWS_SECRET_ACCESS_KEY=`echo $CREDS | jq -r '.Credentials.SecretAccessKey'`
+  export AWS_SESSION_TOKEN=`echo $CREDS | jq -r '.Credentials.SessionToken'`
 
-  echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> ${PLUGIN_FILE}
-  echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> ${PLUGIN_FILE}
-  echo "export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> ${PLUGIN_FILE}
+  echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> ${FILE}
+  echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> ${FILE}
+  echo "export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> ${FILE}
 }

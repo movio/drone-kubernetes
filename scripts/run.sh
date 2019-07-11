@@ -17,14 +17,16 @@ for i in "${CLUSTERS[@]}"; do
     
     clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}"
     setContext "${CLUSTER}" "${USER}"
+
+    kubectl get pods -n kube-system
     
-    if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then 
-        startDeployments "${CLUSTER}" "${NAMESPACE}"
-    elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
-        startDaemonsets "${CLUSTER}" "${NAMESPACE}"
-    else
-        kubectl get pods -n kube-system
-    fi
+    # if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then 
+    #     startDeployments "${CLUSTER}" "${NAMESPACE}"
+    # elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
+    #     startDaemonsets "${CLUSTER}" "${NAMESPACE}"
+    # else
+    #     kubectl get pods -n kube-system
+    # fi
 done
 
 exit 0

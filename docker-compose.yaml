@@ -14,3 +14,5 @@ services:
         - PLUGIN_TAG=latest
         - PLUGIN_REPO=octocat/hello-world 
         - SERVER_URL_KLUSTERAPI=https://api.k8s.dev.movio.co.:443
+        - DRONE_REPO_OWNER=andrei
+        - ROLE=arn:aws:iam::650454640207:role/DroneK8sRole

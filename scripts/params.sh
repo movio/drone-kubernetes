@@ -7,10 +7,15 @@ USER=""
 NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
+ROLE=""
 
 # set globals
 setUser(){
     USER=${PLUGIN_USER:-default}
+}
+
+setRole(){
+    ROLE=${PLUGIN_ROLE:-none}
 }
 
 setNamespace(){
@@ -59,4 +64,5 @@ setGlobals(){
     setNamespace
     setServerUrl
     setKind
+    setRole
 }

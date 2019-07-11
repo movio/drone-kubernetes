@@ -1,5 +1,5 @@
 FROM alpine:3.7
-RUN apk --no-cache add curl ca-certificates bash && \
+RUN apk --no-cache add curl ca-certificates bash jq && \
     curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.9/bin/linux/amd64/kubectl && \
     chmod +x /usr/local/bin/kubectl && \
     mkdir -p /bin/scripts && mkdir -p /tmp && \
