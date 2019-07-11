@@ -8,6 +8,7 @@ NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
 ROLE=""
+FILE=""
 
 # set globals
 setUser(){
@@ -16,6 +17,7 @@ setUser(){
 
 setRole(){
     ROLE=${PLUGIN_ROLE:-none}
+    FILE=${PLUGIN_FILE:-.env}
 }
 
 setNamespace(){
