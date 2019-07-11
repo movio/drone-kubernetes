@@ -7,7 +7,7 @@ services:
         - PLUGIN_KIND=deployment
         - PLUGIN_DEPLOYMENT=api-web 
         - PLUGIN_DAEMONSET=api-web 
-        - PLUGIN_USER=razorpay 
+        - PLUGIN_USER=default 
         - PLUGIN_NAMESPACE=default 
         - PLUGIN_CLUSTER=kluster-api,movio-dev
         - PLUGIN_AUTH_MODE=aws-iam-authenticator
