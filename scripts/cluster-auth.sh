@@ -60,10 +60,10 @@ setContext(){
     local CLUSTER=$1; shift
     local USER=$1
 
-    if [[ ! "${USER}" == "default" ]]; then
+    kubectl config use-context "${CLUSTER}"
+
+    if [[  "${USER}" != "default" ]]; then
         kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
-        kubectl config use-context "${CLUSTER}"
-    else
         kubectl config use-context "${CLUSTER}"
     fi
 }
