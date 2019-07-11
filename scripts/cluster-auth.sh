@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )
 source "${BASEDIR}/assume-role-aws.sh"
 
 setSecureCluster(){
@@ -111,12 +112,18 @@ clientAuthCert(){
 
 clientAuthAws(){
     local CLUSTER=$1; shift
-    local SERVER_URL=$1
+    local SERVER_URL=$1; shift
+    local ROLE=$1
 
     echo "[INFO] Using AWS IAM Authenticator to authorize"
     ls -lsa /usr/local/bin | grep aws
     aws-iam-authenticator version
     echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
+
+    if [[ ! "${ROLE}" == "none" ]]; then
+        assume_role_aws "${ROLE}" "${FILE}"
+    fi
+
     setAwsAuthenticator "${CLUSTER}" "${SERVER_URL}"
 }
 
@@ -146,13 +153,14 @@ clientAuth(){
 clusterAuth(){
     local SERVER_URL=$1; shift
     local CLUSTER=$1; shift
-    local USER=$1
+    local USER=$1; shift
+    local ROLE=$1
 
     AUTH_MODE=${PLUGIN_AUTH_MODE}
     SERVER_CERT_VAR=SERVER_CERT_"${CLUSTER}"
 
     if [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
-        clientAuthAws "${CLUSTER}" "${SERVER_URL}" 
+        clientAuthAws "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
     elif [[ ! -z "$SERVER_CERT_VAR}" ]]; then
         SERVER_CERT=${!SERVER_CERT_VAR}
         if [[ ! -z "${SERVER_CERT}" ]]; then
