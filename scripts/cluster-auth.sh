@@ -52,7 +52,6 @@ setAwsAuthenticator(){
     
     mkdir -p ~/.kube
     cp /bin/scripts/kubeconfig ~/.kube/config
-    kubectl config use-context "${CLUSTER}"
 
     echo "[INFO] kubectl configured for ${CLUSTER}"
 }
