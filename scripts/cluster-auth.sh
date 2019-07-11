@@ -40,13 +40,15 @@ setClientCertAndKey(){
 }
 
 setAwsAuthenticator(){
-    local CLUSTER=$1; shift
+    export CLUSTER=$1; shift
+    export SERVER_URL=$1;
     
     echo "[INFO] Setting aws iam authenticator in kube config."
-    kubectl config set-credentials "${USER}" --client-certificate=${CLUSTER}_client.crt --client-key=${CLUSTER}_client.key
-
-    sed -i -e 's/SERVER_ADDRESS/$SERVER_URL/g' /tmp/kubeconfig
-    sed -i -e 's/CLUSTER_NAME/$CLUSTER/g' /tmp/kubeconfig
+    cat /tmp/kubeconfig
+    sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /tmp/kubeconfig
+    sed -i -e "s~CLUSTER_NAME~$CLUSTER~g" /tmp/kubeconfig
+    
+    mkdir -p ~/.kube
     mv /tmp/kubeconfig ~/.kube/config
     kubectl config use-context "${CLUSTER}"
 
@@ -104,13 +106,12 @@ clientAuthCert(){
 
 clientAuthAws(){
     local CLUSTER=$1; shift
-    local USER=$1
+    local SERVER_URL=$1
     
     echo "[INFO] Using AWS IAM Authenticator to authorize"
-    aws-iam-authenticator version
+    $HOME/bin/aws-iam-authenticator version
     echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
-
-    setAwsAuthenticator "${USER}" "${CLUSTER}" "${CLIENT_CERT}" "${CLIENT_KEY}"
+    setAwsAuthenticator "${CLUSTER}" "${SERVER_URL}"
 }
 
 clientAuth(){
@@ -121,9 +122,9 @@ clientAuth(){
     if [ ! -z "${AUTH_MODE}" ]; then
         if [[ "${AUTH_MODE}" == "token" ]]; then
             clientAuthToken "${CLUSTER}" "${USER}"
-            elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
+        elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
             clientAuthCert "${CLUSTER}" "${USER}"
-            elif [[ "${AUTH_MODE}" == "aws-iam-authenticator"]]; then
+        elif [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
             clientAuthAws "${CLUSTER}" "${USER}"
         else
             echo "[ERROR] Required plugin param - auth_mode - Should be either:"
@@ -140,14 +141,18 @@ clusterAuth(){
     local SERVER_URL=$1; shift
     local CLUSTER=$1; shift
     local USER=$1
-    
+
+    AUTH_MODE=${PLUGIN_AUTH_MODE}
     SERVER_CERT_VAR=SERVER_CERT_"${CLUSTER}"
-    SERVER_CERT=${!SERVER_CERT_VAR}
-    
-    if [[ ! -z "${SERVER_CERT}" ]]; then
-        setSecureCluster "${CLUSTER}" "${SERVER_URL}" "${SERVER_CERT}"
-        AUTH_MODE=${PLUGIN_AUTH_MODE}
-        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}"
+
+    if [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
+        clientAuthAws "${CLUSTER}" "${SERVER_URL}" 
+    elif [[ ! -z "$SERVER_CERT_VAR}" ]]; then
+        SERVER_CERT=${!SERVER_CERT_VAR}
+        if [[ ! -z "${SERVER_CERT}" ]]; then
+            setSecureCluster "${CLUSTER}" "${SERVER_URL}" "${SERVER_CERT}"
+            clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}"
+        fi
     else
         echo "[WARNING] Required plugin parameter: ${SERVER_CERT_VAR} not added!"
         setInsecureCluster "${CLUSTER}" "${SERVER_URL}"

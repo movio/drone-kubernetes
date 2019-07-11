@@ -7,7 +7,7 @@ source "${BASEDIR}/params.sh"
 source "${BASEDIR}/cluster-auth.sh"
 
 # Set clusters as csv for eg. : kluster-api,cde-green
-IFS=',' read -ra CLUSTERS <<< "$PLUGIN_CLUSTER" 
+IFS=',' read -ra CLUSTERS <<< "$PLUGIN_CLUSTER"
 
 # Set global params
 for i in "${CLUSTERS[@]}"; do
@@ -22,6 +22,8 @@ for i in "${CLUSTERS[@]}"; do
         startDeployments "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
+    else
+        kubectl get pods -n kube-system
     fi
 done
 
