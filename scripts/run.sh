@@ -15,7 +15,7 @@ for i in "${CLUSTERS[@]}"; do
     # Source the right script for kind
     source "${BASEDIR}/${KUBE_KIND,,}.sh"
     
-    clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}"
+    clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}" "${ROLE}"
     setContext "${CLUSTER}" "${USER}"
 
     kubectl get pods -n kube-system
