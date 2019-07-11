@@ -161,7 +161,7 @@ clusterAuth(){
     SERVER_CERT_VAR=SERVER_CERT_"${CLUSTER}"
 
     if [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
-        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
+        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}" "${SERVER_URL}" "${ROLE}"
     elif [[ ! -z "$SERVER_CERT_VAR}" ]]; then
         SERVER_CERT=${!SERVER_CERT_VAR}
         if [[ ! -z "${SERVER_CERT}" ]]; then
