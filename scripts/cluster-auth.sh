@@ -44,12 +44,11 @@ setAwsAuthenticator(){
     export SERVER_URL=$1;
     
     echo "[INFO] Setting aws iam authenticator in kube config."
-    cat /tmp/kubeconfig
-    sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /tmp/kubeconfig
-    sed -i -e "s~CLUSTER_NAME~$CLUSTER~g" /tmp/kubeconfig
+    sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /bin/scripts/kubeconfig
+    sed -i -e "s~CLUSTER_NAME~$CLUSTER~g" /bin/scripts/kubeconfig
     
     mkdir -p ~/.kube
-    mv /tmp/kubeconfig ~/.kube/config
+    cp /bin/scripts/kubeconfig ~/.kube/config
     kubectl config use-context "${CLUSTER}"
 
     echo "[INFO] kubectl configured for ${CLUSTER}"
@@ -58,9 +57,13 @@ setAwsAuthenticator(){
 setContext(){
     local CLUSTER=$1; shift
     local USER=$1
-    
-    kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
-    kubectl config use-context "${CLUSTER}"
+
+    if [[ -z "${USER}" ]]; then
+        kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
+        kubectl config use-context "${CLUSTER}"
+    else
+        kubectl config use-context "${CLUSTER}"
+    fi
 }
 
 clientAuthToken(){
@@ -107,9 +110,10 @@ clientAuthCert(){
 clientAuthAws(){
     local CLUSTER=$1; shift
     local SERVER_URL=$1
-    
+
     echo "[INFO] Using AWS IAM Authenticator to authorize"
-    $HOME/bin/aws-iam-authenticator version
+    ls -lsa /usr/local/bin | grep aws
+    aws-iam-authenticator version
     echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
     setAwsAuthenticator "${CLUSTER}" "${SERVER_URL}"
 }
