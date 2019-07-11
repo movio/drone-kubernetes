@@ -3,7 +3,6 @@
 set -e
 
 assume_role_aws() {
-
   local ROLE=$1; shift
   local FILE=$1
 
@@ -11,11 +10,6 @@ assume_role_aws() {
   then
       echo "Error: please provide aws role to assume"
       exit 1
-  fi
-
-  if [ -z $FILE ];
-  then
-      PLUGIN_FILE=".env"
   fi
 
   echo "Assuming: ${ROLE}"
