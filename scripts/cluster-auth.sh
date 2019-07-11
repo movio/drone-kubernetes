@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+source "${BASEDIR}/assume-role-aws.sh"
+
 setSecureCluster(){
     local CLUSTER=$1; shift
     local SERVER_URL=$1; shift
@@ -40,8 +42,8 @@ setClientCertAndKey(){
 }
 
 setAwsAuthenticator(){
-    export CLUSTER=$1; shift
-    export SERVER_URL=$1;
+    local CLUSTER=$1; shift
+    local SERVER_URL=$1;
     
     echo "[INFO] Setting aws iam authenticator in kube config."
     sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /bin/scripts/kubeconfig
