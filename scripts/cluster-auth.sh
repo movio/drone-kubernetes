@@ -43,9 +43,10 @@ setClientCertAndKey(){
 }
 
 setAwsAuthenticator(){
-    local CLUSTER=$1; shift
+    local CLUSTER=$(echo $1 | tr '[:lower:]'); shift
     local SERVER_URL=$1;
-    
+
+    echo $CLUSTER    
     echo "[INFO] Setting aws iam authenticator in kube config."
     sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /bin/scripts/kubeconfig
     sed -i -e "s~CLUSTER_ID~$CLUSTER~g" /bin/scripts/kubeconfig
