@@ -43,7 +43,7 @@ setClientCertAndKey(){
 }
 
 setAwsAuthenticator(){
-    local CLUSTER=$(echo $1 | tr '[:lower:]'); shift
+    local CLUSTER=$(echo $1 | tr '[:upper:]' '[:lower:]'); shift
     local SERVER_URL=$1;
 
     echo $CLUSTER    
