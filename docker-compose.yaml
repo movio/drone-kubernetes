@@ -9,7 +9,7 @@ services:
         - PLUGIN_DAEMONSET=api-web 
         - PLUGIN_USER=default
         - PLUGIN_NAMESPACE=default 
-        - PLUGIN_CLUSTER=kluster-api,movio-dev
+        - PLUGIN_CLUSTER=k8s.dev.movio.co
         - PLUGIN_AUTH_MODE=aws-iam-authenticator
         - PLUGIN_TAG=latest
         - PLUGIN_REPO=octocat/hello-world 
