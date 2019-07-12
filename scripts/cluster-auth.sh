@@ -48,7 +48,7 @@ setAwsAuthenticator(){
     
     echo "[INFO] Setting aws iam authenticator in kube config."
     sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /bin/scripts/kubeconfig
-    sed -i -e "s~CLUSTER_NAME~$CLUSTER~g" /bin/scripts/kubeconfig
+    sed -i -e "s~CLUSTER_ID~$CLUSTER~g" /bin/scripts/kubeconfig
     
     mkdir -p ~/.kube
     cp /bin/scripts/kubeconfig ~/.kube/config
