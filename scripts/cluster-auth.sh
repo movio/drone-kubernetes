@@ -58,7 +58,7 @@ setAwsAuthenticator(){
 }
 
 setContext(){
-    local CLUSTER=$1; shift
+    local CLUSTER=$(echo $1 | tr '[:upper:]' '[:lower:]'); shift
     local USER=$1
 
     kubectl config use-context "${CLUSTER}"
