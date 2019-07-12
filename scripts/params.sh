@@ -37,8 +37,9 @@ setCluster(){
 }
 
 setServerUrl(){
+    local SERVER_URL_VAR=SERVER_URL_K8S
     # create dynamic cert var names
-    local SERVER_URL_VAR=SERVER_URL_${CLUSTER}
+    
     SERVER_URL=${!SERVER_URL_VAR}
     if [[ -z "${SERVER_URL}" ]]; then
         echo "[ERROR] Required drone secret: '${SERVER_URL_VAR}' not added!"
