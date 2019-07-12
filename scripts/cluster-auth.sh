@@ -115,7 +115,6 @@ clientAuthAws(){
     local ROLE=$1
 
     echo "[INFO] Using AWS IAM Authenticator to authorize"
-    ls -lsa /usr/local/bin | grep aws
     aws-iam-authenticator version
     echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
 
