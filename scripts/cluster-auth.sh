@@ -128,7 +128,7 @@ clientAuthAws(){
 
 clientAuth(){
     local AUTH_MODE=$1; shift
-    local CLUSTER=$1; shift
+    local CLUSTER=$(echo $1 | tr '[:upper:]' '[:lower:]'); shift
     local USER=$1; shift
     local SERVER_URL=$1; shift
     local ROLE=$1
