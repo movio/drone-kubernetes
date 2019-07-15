@@ -14,7 +14,7 @@ for i in "${CLUSTERS[@]}"; do
     setGlobals $i
     # Source the right script for kind
     source "${BASEDIR}/${KUBE_KIND,,}.sh"
-    
+
     clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}" "${ROLE}"
     setContext "${CLUSTER}" "${USER}"
 
