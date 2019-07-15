@@ -22,8 +22,6 @@ for i in "${CLUSTERS[@]}"; do
         startDeployments "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
-    else
-        kubectl get pods -n kube-system
     fi
 done
 
