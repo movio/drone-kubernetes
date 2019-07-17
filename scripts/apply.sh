@@ -15,7 +15,7 @@ applyConfiguration() {
   if [[ "$(declare -p ${DIR})" =~ "declare -a" ]]; then
     for dir in "${DIR[@]}"; do
       echo "Applying changes from folder: ${dir}"
-      for file in "${dir}/*"; do
+      for file in "${dir}/*.yml"; do
         files=( "${files[@]}" "${dir}/${file}" )
         echo "File: $file"
       done
