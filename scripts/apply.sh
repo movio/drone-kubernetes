@@ -2,6 +2,15 @@
 
 set -euo pipefail
 
+is_array()
+{   #detect if arg is an array, returns 0 on sucess, 1 otherwise
+    [ -z "$1" ] && return 1
+    if [ -n "$BASH" ]; then
+        declare -p ${1} 2> /dev/null | grep 'declare \-a' >/dev/null && return 0
+    fi
+    return 1
+}
+
 applyConfiguration() {
   local DIR=$1; shift
   local FILE=$1
@@ -32,13 +41,4 @@ applyConfiguration() {
     echo "kubectl apply -f ${FILE}"
   fi
 
-}
-
-is_array()
-{   #detect if arg is an array, returns 0 on sucess, 1 otherwise
-    [ -z "$1" ] && return 1
-    if [ -n "$BASH" ]; then
-        declare -p ${1} 2> /dev/null | grep 'declare \-a' >/dev/null && return 0
-    fi
-    return 1
 }
