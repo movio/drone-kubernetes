@@ -9,6 +9,7 @@ CLUSTER=""
 SERVER_URL=""
 ROLE=""
 FILE=""
+K8S_FILE=""
 
 # set globals
 setUser(){
@@ -18,6 +19,11 @@ setUser(){
 setRole(){
     ROLE=${PLUGIN_ROLE:-none}
     FILE=${PLUGIN_FILE:-.env}
+}
+
+setApplyConfiguration(){
+    K8S_FILE=${PLUGIN_K8S_FILE}
+    DIR=${PLUGIN_DIR}
 }
 
 setNamespace(){
@@ -68,4 +74,5 @@ setGlobals(){
     setServerUrl
     setKind
     setRole
+    setApplyConfiguration
 }

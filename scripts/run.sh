@@ -18,15 +18,13 @@ for i in "${CLUSTERS[@]}"; do
 
     clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}" "${ROLE}"
     setContext "${CLUSTER}" "${USER}"
-
-    kubectl get pods -n kube-system
     
     if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then 
         startDeployments "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "FILE" ]]; then
-        applyConfiguration "${FILE}"
+        applyConfiguration "${DIR[@]}" "${K8S_FILE}"
     fi
 done
 
