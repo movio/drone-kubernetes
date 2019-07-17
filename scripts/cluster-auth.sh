@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )
+source "${BASEDIR}/assume-role-aws.sh"
+
 setSecureCluster(){
     local CLUSTER=$1; shift
     local SERVER_URL=$1; shift
@@ -39,12 +42,29 @@ setClientCertAndKey(){
     kubectl config set-credentials "${USER}" --client-certificate=${CLUSTER}_client.crt --client-key=${CLUSTER}_client.key
 }
 
+setAwsAuthenticator(){
+    local CLUSTER=$(echo $1 | tr '[:upper:]' '[:lower:]'); shift
+    local SERVER_URL=$1;
+
+    echo "[INFO] Setting aws iam authenticator in kube config."
+    sed -i -e "s~SERVER_ADDRESS~$SERVER_URL~g" /bin/scripts/kubeconfig
+    sed -i -e "s~CLUSTER_ID~$CLUSTER~g" /bin/scripts/kubeconfig
+    
+    mkdir -p ~/.kube && cp /bin/scripts/kubeconfig ~/.kube/config
+
+    echo "[INFO] kubectl configured for ${CLUSTER} using aws-iam-authenticator"
+}
+
 setContext(){
     local CLUSTER=$1; shift
     local USER=$1
-    
-    kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
-    kubectl config use-context "${CLUSTER}"
+
+    if [[  "${USER}" != "default" ]]; then
+        kubectl config set-context "${CLUSTER}" --cluster="${CLUSTER}" --user="${USER}"
+        kubectl config use-context "${CLUSTER}"
+    else
+        kubectl config use-context "$(echo ${CLUSTER} | tr '[:upper:]' '[:lower:]')"
+    fi
 }
 
 clientAuthToken(){
@@ -88,19 +108,39 @@ clientAuthCert(){
     fi
 }
 
+clientAuthAws(){
+    local CLUSTER=$1; shift
+    local SERVER_URL=$1; shift
+    local ROLE=$1
+
+    echo "[INFO] Using AWS IAM Authenticator to authorize"
+    aws-iam-authenticator version
+    echo "[INFO] aws-iam-authenticator good to go! Adding to kube config file..."
+
+    if [[ "${ROLE}" != "none" ]]; then
+        assume_role_aws "${ROLE}" "${FILE}"
+    fi
+
+    setAwsAuthenticator "${CLUSTER}" "${SERVER_URL}"
+}
+
 clientAuth(){
     local AUTH_MODE=$1; shift
     local CLUSTER=$1; shift
-    local USER=$1
+    local USER=$1; shift
+    local SERVER_URL=$1; shift
+    local ROLE=$1
     
     if [ ! -z "${AUTH_MODE}" ]; then
         if [[ "${AUTH_MODE}" == "token" ]]; then
             clientAuthToken "${CLUSTER}" "${USER}"
-            elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
+        elif [[ "${AUTH_MODE}" == "client-cert" ]]; then
             clientAuthCert "${CLUSTER}" "${USER}"
+        elif [[ "${AUTH_MODE}" == "aws-iam-authenticator" ]]; then
+            clientAuthAws "${CLUSTER}" "${SERVER_URL}" "${ROLE}"
         else
             echo "[ERROR] Required plugin param - auth_mode - Should be either:"
-            echo "[ token | client-cert ]"
+            echo "[ token | client-cert | aws-iam-authenticator ]"
             exit 1
         fi
     else
@@ -112,15 +152,20 @@ clientAuth(){
 clusterAuth(){
     local SERVER_URL=$1; shift
     local CLUSTER=$1; shift
-    local USER=$1
-    
+    local USER=$1; shift
+    local ROLE=$1
+
+    AUTH_MODE=${PLUGIN_AUTH_MODE}
     SERVER_CERT_VAR=SERVER_CERT_"${CLUSTER}"
-    SERVER_CERT=${!SERVER_CERT_VAR}
-    
-    if [[ ! -z "${SERVER_CERT}" ]]; then
-        setSecureCluster "${CLUSTER}" "${SERVER_URL}" "${SERVER_CERT}"
-        AUTH_MODE=${PLUGIN_AUTH_MODE}
-        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}"
+
+    if [[ "${AUTH_MODE}" == "aws-iam-authenticator" && "${ROLE}" != "none" ]]; then
+        clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}" "${SERVER_URL}" "${ROLE}"
+    elif [[ ! -z "$SERVER_CERT_VAR}" ]]; then
+        SERVER_CERT=${!SERVER_CERT_VAR}
+        if [[ ! -z "${SERVER_CERT}" ]]; then
+            setSecureCluster "${CLUSTER}" "${SERVER_URL}" "${SERVER_CERT}"
+            clientAuth "${AUTH_MODE}" "${CLUSTER}" "${USER}"
+        fi
     else
         echo "[WARNING] Required plugin parameter: ${SERVER_CERT_VAR} not added!"
         setInsecureCluster "${CLUSTER}" "${SERVER_URL}"

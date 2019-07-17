@@ -7,10 +7,17 @@ USER=""
 NAMESPACE=""
 CLUSTER=""
 SERVER_URL=""
+ROLE=""
+FILE=""
 
 # set globals
 setUser(){
     USER=${PLUGIN_USER:-default}
+}
+
+setRole(){
+    ROLE=${PLUGIN_ROLE:-none}
+    FILE=${PLUGIN_FILE:-.env}
 }
 
 setNamespace(){
@@ -30,9 +37,10 @@ setCluster(){
 }
 
 setServerUrl(){
+    local SERVER_URL_VAR=PLUGIN_SERVER_URL_K8S
     # create dynamic cert var names
-    local SERVER_URL_VAR=SERVER_URL_${CLUSTER}
-    SERVER_URL=${!SERVER_URL_VAR}
+    
+    SERVER_URL=${PLUGIN_SERVER_URL_K8S}
     if [[ -z "${SERVER_URL}" ]]; then
         echo "[ERROR] Required drone secret: '${SERVER_URL_VAR}' not added!"
         exit 1
@@ -59,4 +67,5 @@ setGlobals(){
     setNamespace
     setServerUrl
     setKind
+    setRole
 }

@@ -7,15 +7,15 @@ source "${BASEDIR}/params.sh"
 source "${BASEDIR}/cluster-auth.sh"
 
 # Set clusters as csv for eg. : kluster-api,cde-green
-IFS=',' read -ra CLUSTERS <<< "$PLUGIN_CLUSTER" 
+IFS=',' read -ra CLUSTERS <<< "$PLUGIN_CLUSTER"
 
 # Set global params
 for i in "${CLUSTERS[@]}"; do
     setGlobals $i
     # Source the right script for kind
     source "${BASEDIR}/${KUBE_KIND,,}.sh"
-    
-    clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}"
+
+    clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}" "${ROLE}"
     setContext "${CLUSTER}" "${USER}"
     
     if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then 
