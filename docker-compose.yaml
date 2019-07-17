@@ -4,7 +4,7 @@ services:
         build: 
             context: .
         environment:
-        - PLUGIN_KIND=file
+        - PLUGIN_KIND=apply
         - PLUGIN_DEPLOYMENT=api-web 
         - PLUGIN_DAEMONSET=api-web 
         - PLUGIN_USER=default
