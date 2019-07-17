@@ -5,6 +5,7 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd )
 
 source "${BASEDIR}/params.sh"
 source "${BASEDIR}/cluster-auth.sh"
+source "${BASEDIR}/apply.sh"
 
 # Set clusters as csv for eg. : kluster-api,cde-green
 IFS=',' read -ra CLUSTERS <<< "$PLUGIN_CLUSTER"
@@ -17,11 +18,15 @@ for i in "${CLUSTERS[@]}"; do
 
     clusterAuth "${SERVER_URL}" "${CLUSTER}" "${USER}" "${ROLE}"
     setContext "${CLUSTER}" "${USER}"
+
+    kubectl get pods -n kube-system
     
     if [[ ${KUBE_KIND} == "DEPLOYMENT" ]]; then 
         startDeployments "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
+    elif [[ ${KUBE_KIND} == "FILE" ]]; then
+        applyConfiguration "${FILE}"
     fi
 done
 
