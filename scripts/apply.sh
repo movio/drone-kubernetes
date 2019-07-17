@@ -12,7 +12,7 @@ applyConfiguration() {
     exit 1
   fi
 
-  if [[ "$(declare -p DIR)" =~ "declare -a" ]]; then
+  if [[ is_array $DIR ]]; then
     for dir in "${DIR[@]}"; do
       echo "Applying changes from folder: ${dir}"
       for file in "${dir}/*.yml"; do
@@ -32,4 +32,13 @@ applyConfiguration() {
     echo "kubectl apply -f ${FILE}"
   fi
 
+}
+
+is_array()
+{   #detect if arg is an array, returns 0 on sucess, 1 otherwise
+    [ -z "$1" ] && return 1
+    if [ -n "$BASH" ]; then
+        declare -p ${1} 2> /dev/null | grep 'declare \-a' >/dev/null && return 0
+    fi
+    return 1
 }
