@@ -14,7 +14,7 @@ services:
         - PLUGIN_TAG=latest
         - PLUGIN_REPO=octocat/hello-world 
         - PLUGIN_DIR=/bin/scripts
-        - SERVER_URL_K8S=https://api.k8s.dev.movio.co
+        - PLUGIN_SERVER_URL_K8S=https://api.k8s.dev.movio.co
         - DRONE_REPO_OWNER=andrei
         - DRONE_REPO_NAME=movio
         - PLUGIN_ROLE=arn:aws:iam::650454640207:role/DroneK8sRole
