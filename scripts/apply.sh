@@ -28,7 +28,7 @@ applyConfiguration() {
         # fi
       done
     done
-  elif [[ ! -z $FILE ]]; then
+  elif [[ $FILE != "none" ]]; then
     echo "kubectl apply -f ${FILE}"
   fi
 

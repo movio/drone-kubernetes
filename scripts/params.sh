@@ -9,7 +9,6 @@ CLUSTER=""
 SERVER_URL=""
 ROLE=""
 FILE=""
-K8S_FILE=""
 
 # set globals
 setUser(){
@@ -22,7 +21,7 @@ setRole(){
 }
 
 setApplyConfiguration(){
-    K8S_FILE=${PLUGIN_K8S_FILE:-}
+    K8S_FILE=${PLUGIN_K8S_FILE:-none}
     DIR=${PLUGIN_DIR:-.}
 }
 
@@ -57,7 +56,7 @@ setKind(){
     if [ ! -z "${PLUGIN_KIND:-}" ]; then
         # convert cluster name to ucase and assign
         KUBE_KIND=${PLUGIN_KIND^^}
-        if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET)$ ]]; then
+        if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET|FILE)$ ]]; then
             echo "[ERROR] Only deployment and daemonset kinds are supported now."
             echo 1
         fi
