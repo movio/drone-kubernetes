@@ -16,6 +16,9 @@ applyConfiguration() {
   local FILE=$1
   declare -a files
 
+  echo "Directories: ${DIR}"
+  echo "FILE: ${FILE}"
+
   if [[ -z $DIR ]]; then
     echo "[ERROR] Required variable DIR in order to run 'kubectl apply -f' "
     exit 1
