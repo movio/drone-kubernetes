@@ -23,7 +23,7 @@ for i in "${CLUSTERS[@]}"; do
         startDeployments "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
-    elif [[ ${KUBE_KIND} == "FILE" ]]; then
+    elif [[ ${KUBE_KIND} == "APPLY" ]]; then
         applyConfiguration "${DIR[@]}" "${K8S_FILE}"
     fi
 done

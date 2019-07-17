@@ -56,7 +56,7 @@ setKind(){
     if [ ! -z "${PLUGIN_KIND:-}" ]; then
         # convert cluster name to ucase and assign
         KUBE_KIND=${PLUGIN_KIND^^}
-        if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET|FILE)$ ]]; then
+        if ! [[ "${KUBE_KIND}" =~ ^(DEPLOYMENT|DAEMONSET|APPLY)$ ]]; then
             echo "[ERROR] Only deployment and daemonset kinds are supported now."
             echo 1
         fi
