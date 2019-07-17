@@ -22,8 +22,8 @@ setRole(){
 }
 
 setApplyConfiguration(){
-    K8S_FILE=${PLUGIN_K8S_FILE}
-    DIR=${PLUGIN_DIR}
+    K8S_FILE=${PLUGIN_K8S_FILE:-}
+    DIR=${PLUGIN_DIR:-.}
 }
 
 setNamespace(){
