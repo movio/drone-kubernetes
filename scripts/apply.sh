@@ -21,7 +21,7 @@ applyConfiguration() {
     exit 1
   fi
 
-  if is_array DIR; then
+  if is_array $DIR; then
     for dir in "${DIR[@]}"; do
       echo "Applying changes from folder: ${dir}"
       for file in "${dir}/*.yml"; do
