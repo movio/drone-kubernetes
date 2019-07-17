@@ -12,7 +12,7 @@ applyConfiguration() {
     exit 1
   fi
 
-  if [[ "$(declare -p ${DIR})" =~ "declare -a" ]]; then
+  if [[ "$(declare -p DIR)" =~ "declare -a" ]]; then
     for dir in "${DIR[@]}"; do
       echo "Applying changes from folder: ${dir}"
       for file in "${dir}/*.yml"; do
