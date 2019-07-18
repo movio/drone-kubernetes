@@ -34,7 +34,7 @@ applyConfiguration() {
         fi
       done
       echo "Files: ${files[@]}"
-      for file in "${files}"; do
+      for file in "${files[@]}"; do
         # result=$(kubectl apply -f ${file})
         echo "kubectl apply -f ${file}"
         # if [[ "${result}" == "daemon set \"${DAEMONSET}\" successfully rolled out" ]]; then
