@@ -35,7 +35,7 @@ applyConfiguration() {
       else
         echo "[INFO] Applying changes with file: ${K8S_FILE}"
         echo "kubectl apply -f ${K8S_FILE}"
-        kubectl apply -f ${K8S_FILE}
+        kubectl apply -f ./${K8S_FILE}
       fi
     fi
   elif [[ $DIR != "." ]]; then
