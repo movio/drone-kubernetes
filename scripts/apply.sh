@@ -23,12 +23,15 @@ applyConfiguration() {
 
   if [[ $DIR == *","* ]]; then
     IFS=',' read -ra DIRS <<< "$DIR"
-    echo "Directories: ${DIRS}"
+    echo "Directories: ${DIRS[@]}"
+
     for dir in "${DIRS[@]}"; do
       echo "Applying changes from folder: ${dir}"
-      for file in "${dir}/*.yml"; do
-        files=( "${files[@]}" "${dir}/${file}" )
-        echo "File: $file"
+      for file in "${dir}/*"; do
+        if [[ ${file: -4} == ".yml" ]]; then 
+          files=( "${files[@]}" "${dir}/${file}" )
+          echo "File: $file"
+        fi
       done
       echo "Files: $files"
       for file in "${files}"; do
