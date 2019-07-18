@@ -2,15 +2,6 @@
 
 set -euo pipefail
 
-is_array()
-{   #detect if arg is an array, returns 0 on sucess, 1 otherwise
-    [ -z "$1" ] && return 1
-    if [ -n "$BASH" ]; then
-        declare -p ${1} 2> /dev/null | grep 'declare \-a' >/dev/null && return 0
-    fi
-    return 1
-}
-
 applyConfiguration() {
   local DIR=$1; shift
   local K8S_FILE=$1
@@ -24,8 +15,8 @@ applyConfiguration() {
           echo "[ERROR] File $f is not an YAML file."
           exit 1
         else
-          echo "[INFO] Applying changes with file: ${f}"
-          echo "kubectl apply -f ${f}"
+          echo "[INFO] Applying file: ${f}"
+          kubectl apply -f ${f}
         fi
       done
     else
@@ -33,9 +24,8 @@ applyConfiguration() {
         echo "[ERROR] File $K8S_FILE is not an YAML file."
         exit 1
       else
-        echo "[INFO] Applying changes with file: ${K8S_FILE}"
-        echo "kubectl apply -f ${K8S_FILE}"
-        kubectl apply -f ./${K8S_FILE}
+        echo "[INFO] Applying file: ${K8S_FILE}"
+        kubectl apply -f ${K8S_FILE}
       fi
     fi
   elif [[ $DIR != "." ]]; then
@@ -52,15 +42,10 @@ applyConfiguration() {
           fi
         done
         for file in "${files[@]}"; do
-          # result=$(kubectl apply -f ${file})
-          echo "kubectl apply -f ${file}"
-          # if [[ "${result}" == "daemon set \"${DAEMONSET}\" successfully rolled out" ]]; then
-          #   SUCCESS_COUNT=$((SUCCESS_COUNT+1))
-          # fi
+          echo "[INFO] Applying file: ${file}"
+          kubectl apply -f ${file}
         done
       done
-    elif [[ $FILE != "none" ]]; then
-      echo "kubectl apply -f ${FILE}"
     fi
   fi
 
