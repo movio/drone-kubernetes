@@ -16,17 +16,21 @@ applyConfiguration() {
   local K8S_FILE=$1
 
   if [[ $K8S_FILE != "none" ]]; then
-
     if [[ $K8S_FILE == *","* ]]; then
       IFS=',' read -ra FILES <<< $K8S_FILE
 
       for f in "${FILES[@]}"; do
-        echo "[INFO] Applying changes with file: ${f}"
-        echo "kubectl apply -f ${f}"
+        if [[ ${f: -4} != ".yml" ]]; then
+          echo "[ERROR] File $f is not an YAML file."
+          exit 1
+        else
+          echo "[INFO] Applying changes with file: ${f}"
+          echo "kubectl apply -f ${f}"
+        fi
       done
     else
       if [[ ${K8S_FILE: -4} != ".yml" ]]; then
-        echo "[ERROR] File is not an YAML file."
+        echo "[ERROR] File $K8S_FILE is not an YAML file."
         exit 1
       else
         echo "[INFO] Applying changes with file: ${K8S_FILE}"
