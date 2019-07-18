@@ -24,13 +24,16 @@ applyConfiguration() {
         echo "[INFO] Applying changes with file: ${f}"
         echo "kubectl apply -f ${f}"
       done
-
     else
-      echo "[INFO] Applying changes with file: ${K8S_FILE}"
-      echo "kubectl apply -f ${K8S_FILE}"
-      kubectl apply -f ${K8S_FILE}
+      if [[ ${K8S_FILE: -4} != ".yml" ]]; then
+        echo "[ERROR] File is not an YAML file."
+        exit 1
+      else
+        echo "[INFO] Applying changes with file: ${K8S_FILE}"
+        echo "kubectl apply -f ${K8S_FILE}"
+        kubectl apply -f ${K8S_FILE}
+      fi
     fi
-
   elif [[ $DIR != "." ]]; then
     declare -a files
 
