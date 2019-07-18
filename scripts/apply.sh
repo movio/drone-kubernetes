@@ -16,16 +16,15 @@ applyConfiguration() {
   local FILE=$1
   declare -a files
 
-  echo "Directories: ${DIR}"
-  echo "FILE: ${FILE}"
-
   if [[ -z $DIR ]]; then
     echo "[ERROR] Required variable DIR in order to run 'kubectl apply -f' "
     exit 1
   fi
 
-  if is_array $DIR; then
-    for dir in "${DIR[@]}"; do
+  if [[ $DIR == *","* ]]; then
+    IFS=',' read -ra DIRS <<< "$DIR"
+    echo "Directories: ${DIRS}"
+    for dir in "${DIRS[@]}"; do
       echo "Applying changes from folder: ${dir}"
       for file in "${dir}/*.yml"; do
         files=( "${files[@]}" "${dir}/${file}" )
