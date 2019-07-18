@@ -13,6 +13,7 @@ services:
         - PLUGIN_AUTH_MODE=aws-iam-authenticator
         - PLUGIN_TAG=latest
         - PLUGIN_REPO=octocat/hello-world 
+        - PLUGIN_FILES=scripts/configmap.yml,scripts/configmap2.yml
         - PLUGIN_DIR=/bin/scripts,/bin/scripts
         - PLUGIN_SERVER_URL_K8S=https://api.k8s.dev.movio.co
         - DRONE_REPO_OWNER=andrei
