@@ -33,7 +33,7 @@ applyConfiguration() {
           echo "File: $file"
         fi
       done
-      echo "Files: $files"
+      echo "Files: ${files[@]}"
       for file in "${files}"; do
         # result=$(kubectl apply -f ${file})
         echo "kubectl apply -f ${file}"
