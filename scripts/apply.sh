@@ -26,14 +26,14 @@ applyConfiguration() {
       done
 
     else
-      echo "[INFO] Applying changes with file: ${FILE}"
-      echo "kubectl apply -f ${FILE}"
-      kubectl apply -f 
+      echo "[INFO] Applying changes with file: ${K8S_FILE}"
+      echo "kubectl apply -f ${K8S_FILE}"
+      kubectl apply -f ${K8S_FILE}
     fi
 
   elif [[ $DIR != "." ]]; then
     declare -a files
-    
+
     if [[ $DIR == *","* ]]; then
       IFS=',' read -ra DIRS <<< "$DIR"
 
