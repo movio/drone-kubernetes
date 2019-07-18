@@ -16,19 +16,24 @@ applyConfiguration() {
   local K8S_FILE=$1
 
   if [[ $K8S_FILE != "none" ]]; then
+
     if [[ $K8S_FILE == *","* ]]; then
       IFS=',' read -ra FILES <<< $K8S_FILE
+
       for f in "${FILES[@]}"; do
         echo "[INFO] Applying changes with file: ${f}"
         echo "kubectl apply -f ${f}"
       done
+
     else
       echo "[INFO] Applying changes with file: ${FILE}"
       echo "kubectl apply -f ${FILE}"
+      kubectl apply -f 
     fi
 
   elif [[ $DIR != "." ]]; then
     declare -a files
+    
     if [[ $DIR == *","* ]]; then
       IFS=',' read -ra DIRS <<< "$DIR"
 
