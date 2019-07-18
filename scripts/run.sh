@@ -24,7 +24,7 @@ for i in "${CLUSTERS[@]}"; do
     elif [[ ${KUBE_KIND} == "DAEMONSET" ]]; then
         startDaemonsets "${CLUSTER}" "${NAMESPACE}"
     elif [[ ${KUBE_KIND} == "APPLY" ]]; then
-        applyConfiguration "${DIR[@]}" "${K8S_FILE}"
+        applyConfiguration "${DIR}" "${K8S_FILE}"
     fi
 done
 

@@ -13,11 +13,11 @@ is_array()
 
 applyConfiguration() {
   local DIR=$1; shift
-  local FILE=$1
+  local K8S_FILE=$1
 
-  if [[ ! -z $FILE]]; then
-    if [[ $FILE == *","* ]]; then
-      IFS=',' read -ra FILES <<< "$FILE"
+  if [[ $K8S_FILE != "none" ]]; then
+    if [[ $K8S_FILE == *","* ]]; then
+      IFS=',' read -ra FILES <<< $K8S_FILE
       for f in "${FILES[@]}"; do
         echo "[INFO] Applying changes with file: ${f}"
         echo "kubectl apply -f ${f}"
@@ -26,8 +26,8 @@ applyConfiguration() {
       echo "[INFO] Applying changes with file: ${FILE}"
       echo "kubectl apply -f ${FILE}"
     fi
-  
-  elif [[ ! -z $DIR ]]; then
+
+  elif [[ $DIR != "." ]]; then
     declare -a files
     if [[ $DIR == *","* ]]; then
       IFS=',' read -ra DIRS <<< "$DIR"
