@@ -6,6 +6,7 @@ applyConfiguration() {
   local DIR=$1; shift
   local K8S_FILE=$1
 
+## K8S fles takes precedence over DIR
   if [[ $K8S_FILE != "none" ]]; then
     if [[ $K8S_FILE == *","* ]]; then
       IFS=',' read -ra FILES <<< $K8S_FILE

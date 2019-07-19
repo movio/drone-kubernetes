@@ -5,17 +5,11 @@ services:
             context: .
         environment:
         - PLUGIN_KIND=apply
-        - PLUGIN_DEPLOYMENT=api-web 
-        - PLUGIN_DAEMONSET=api-web 
-        - PLUGIN_USER=default
-        - PLUGIN_NAMESPACE=default 
         - PLUGIN_CLUSTER=k8s.dev.movio.co
         - PLUGIN_AUTH_MODE=aws-iam-authenticator
-        - PLUGIN_TAG=latest
-        - PLUGIN_REPO=octocat/hello-world 
         - PLUGIN_K8S_FILE=scripts/configmap.yml
         - PLUGIN_DIR=/bin/scripts,/bin/scripts
         - PLUGIN_SERVER_URL_K8S=https://api.k8s.dev.movio.co
+        - PLUGIN_ROLE=arn:aws:iam::650454640207:role/DroneK8sRole
         - DRONE_REPO_OWNER=andrei
         - DRONE_REPO_NAME=movio
-        - PLUGIN_ROLE=arn:aws:iam::650454640207:role/DroneK8sRole
